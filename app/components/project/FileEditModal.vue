@@ -4,7 +4,7 @@ const emit = defineEmits<{ update: [project: ProjectDetail], close: [] }>()
 const open = defineModel<boolean>('open', { default: false })
 const onError = useApiError()
 
-const { data: filaments } = await useFetch('/api/filaments', { key: 'filaments' })
+const { data: filaments } = useFetch('/api/filaments', { key: 'filaments' })
 const filamentItems = computed(() => (filaments.value ?? []).map(f => ({
   label: `${f.type} · ${f.colorName}${f.brand ? ` (${f.brand})` : ''}`,
   value: f.id,

@@ -5,6 +5,9 @@
 export function useUpload() {
   const progress = ref(0)
   const uploading = ref(false)
+  let last: XMLHttpRequest | null = null
+  /** Reads a response header of the last upload (e.g. `x-new-filaments`). */
+  const header = (name: string) => last?.getResponseHeader(name) ?? null
 
   function upload<T>(url: string, files: File[], fields: Record<string, string> = {}): Promise<T> {
     const body = new FormData()
@@ -15,6 +18,7 @@ export function useUpload() {
     progress.value = 0
     return new Promise<T>((resolve, reject) => {
       const xhr = new XMLHttpRequest()
+      last = xhr
       xhr.open('POST', url)
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) progress.value = Math.round((e.loaded / e.total) * 100)
@@ -35,5 +39,5 @@ export function useUpload() {
     })
   }
 
-  return { upload, progress, uploading }
+  return { upload, progress, uploading, header }
 }

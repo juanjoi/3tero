@@ -16,10 +16,13 @@ useHead({ title: () => `${p.value.title} · Layra` })
 const tab = ref('files')
 const tabs = computed(() => [
   { label: 'Ficheros', value: 'files', slot: 'files' as const, badge: p.value.files.length || undefined },
+  { label: 'Impresiones', value: 'prints', slot: 'prints' as const, badge: p.value.prints.length || undefined },
   { label: 'Materiales', value: 'materials', slot: 'materials' as const },
   { label: 'Notas', value: 'notes', slot: 'notes' as const },
   { label: 'Info', value: 'info', slot: 'info' as const },
 ])
+
+const logOpen = ref(false)
 
 const changingStatus = ref(false)
 async function changeStatus(status: ProjectStatus) {
@@ -155,7 +158,15 @@ const menu = computed<DropdownMenuItem[][]>(() => [
           </div>
         </div>
 
-        <UTabs v-model="tab" :items="tabs" class="w-full">
+        <div class="flex gap-2">
+          <UButton icon="i-lucide-printer" label="Registrar impresión" size="lg" class="flex-1 justify-center" @click="logOpen = true" />
+          <UButton :to="`/projects/${id}/edit`" icon="i-lucide-pencil" size="lg" variant="outline" color="neutral" aria-label="Editar" />
+        </div>
+
+        <UTabs v-model="tab" :items="tabs" variant="link" :ui="{ list: 'overflow-x-auto overflow-y-hidden', trigger: 'shrink-0' }" class="w-full">
+          <template #prints>
+            <PrintsPanel :project="p" class="pt-3" @update="update" @log="logOpen = true" />
+          </template>
           <template #files>
             <FilesPanel :project="p" class="pt-3" @update="update" />
           </template>
@@ -192,6 +203,8 @@ const menu = computed<DropdownMenuItem[][]>(() => [
         </UTabs>
       </section>
     </div>
+
+    <LogPrintModal v-if="logOpen" v-model:open="logOpen" :project="p" @update="update($event); tab = 'prints'" />
 
     <UModal v-model:open="confirmDelete" title="¿Borrar definitivamente?" description="Se borrarán el proyecto, sus fotos y ficheros. No se puede deshacer.">
       <template #footer>

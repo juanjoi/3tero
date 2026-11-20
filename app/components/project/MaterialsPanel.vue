@@ -3,7 +3,7 @@ const props = defineProps<{ project: ProjectDetail }>()
 const emit = defineEmits<{ update: [project: ProjectDetail] }>()
 const onError = useApiError()
 
-const { data: catalogue } = await useFetch('/api/materials', { key: 'materials' })
+const { data: catalogue } = useFetch('/api/materials', { key: 'materials' })
 const reference = computed(() => props.project.files.find(f => f.final) ?? props.project.files[0])
 
 const adding = ref<string | undefined>()
