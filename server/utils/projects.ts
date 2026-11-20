@@ -4,7 +4,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 type Db = NodePgDatabase<typeof schema>
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0]
 
-const { projects, tags, projectTags, projectImages, projectFiles, fileFilaments, filaments, projectMaterials, materials, statusHistory, printLogs } = schema
+const { projects, tags, projectTags, projectImages, projectFiles, fileFilaments, filaments, projectMaterials, materials, statusHistory, printLogs, printLogFilaments, printLogImages } = schema
 
 export async function getProjectOr404(db: Db | Tx, id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw createError({ statusCode: 404, statusMessage: 'Proyecto no encontrado' })
@@ -32,7 +32,7 @@ export async function recordStatus(tx: Tx, projectId: string, from: ProjectStatu
 export async function getProjectDetail(db: Db, id: string) {
   const project = await getProjectOr404(db, id)
 
-  const [tagRows, images, files, fileFils, mats, history, prints] = await Promise.all([
+  const [tagRows, images, files, fileFils, mats, history, prints, printFils, printImgs] = await Promise.all([
     db.select({ id: tags.id, name: tags.name, color: tags.color })
       .from(projectTags).innerJoin(tags, eq(tags.id, projectTags.tagId))
       .where(eq(projectTags.projectId, id)).orderBy(asc(tags.name)),
@@ -52,7 +52,18 @@ export async function getProjectDetail(db: Db, id: string) {
       .from(projectMaterials).innerJoin(materials, eq(materials.id, projectMaterials.materialId))
       .where(eq(projectMaterials.projectId, id)).orderBy(asc(materials.category), asc(materials.name)),
     db.select().from(statusHistory).where(eq(statusHistory.projectId, id)).orderBy(desc(statusHistory.changedAt)),
-    db.select({ count: sql<number>`count(*)::int` }).from(printLogs).where(eq(printLogs.projectId, id)),
+    db.select().from(printLogs).where(eq(printLogs.projectId, id)).orderBy(desc(printLogs.printedAt)),
+    db.select({
+      printLogId: printLogFilaments.printLogId, grams: printLogFilaments.grams, pricePerKg: printLogFilaments.pricePerKg,
+      filamentId: filaments.id, type: filaments.type, colorName: filaments.colorName, colorHex: filaments.colorHex,
+    }).from(printLogFilaments)
+      .innerJoin(filaments, eq(filaments.id, printLogFilaments.filamentId))
+      .innerJoin(printLogs, eq(printLogs.id, printLogFilaments.printLogId))
+      .where(eq(printLogs.projectId, id)),
+    db.select({ id: printLogImages.id, printLogId: printLogImages.printLogId, path: printLogImages.path, thumbPath: printLogImages.thumbPath })
+      .from(printLogImages)
+      .innerJoin(printLogs, eq(printLogs.id, printLogImages.printLogId))
+      .where(eq(printLogs.projectId, id)),
   ])
 
   const filesOut = files.map((f) => {
@@ -63,12 +74,24 @@ export async function getProjectDetail(db: Db, id: string) {
       thumbnailUrl: f.thumbnailPath ? `/media/${f.thumbnailPath}` : null,
       final: project.finalFileId === f.id,
       filaments: fils,
-      grams: fils.reduce((s, x) => s + Number(x.grams), 0),
+      grams: Math.round(fils.reduce((s, x) => s + Number(x.grams), 0) * 100) / 100,
       cost: filamentCost(fils),
       parsed: undefined,
     }
   })
   const reference = filesOut.find(f => f.final) ?? filesOut[0] ?? null
+
+  const printsOut = prints.map((p) => {
+    const fils = printFils.filter(f => f.printLogId === p.id)
+    return {
+      ...p,
+      fileLabel: filesOut.find(f => f.id === p.fileId)?.label ?? null,
+      filaments: fils,
+      grams: Math.round(fils.reduce((s, x) => s + Number(x.grams), 0) * 100) / 100,
+      cost: filamentCost(fils),
+      images: printImgs.filter(i => i.printLogId === p.id).map(i => ({ id: i.id, url: `/media/${i.path}`, thumbUrl: i.thumbPath ? `/media/${i.thumbPath}` : null })),
+    }
+  })
 
   return {
     ...project,
@@ -77,7 +100,8 @@ export async function getProjectDetail(db: Db, id: string) {
     files: filesOut,
     materials: mats,
     history,
-    printCount: prints[0]?.count ?? 0,
+    prints: printsOut,
+    spent: Math.round(printsOut.reduce((s, p) => s + p.cost, 0) * 100) / 100,
     estimate: reference
       ? { fileId: reference.id, cost: reference.filaments.length ? reference.cost : null, grams: reference.grams || null, minutes: reference.estMinutes }
       : null,

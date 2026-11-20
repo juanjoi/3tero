@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PRIORITIES, PROJECT_STATUSES, PROJECT_SORTS } from './domain'
+import { PRINT_RESULTS, PRIORITIES, PROJECT_STATUSES, PROJECT_SORTS } from './domain'
 
 const optionalText = z.string().trim().max(10_000).nullish().transform(v => (v ? v : null))
 const optionalUrl = z.union([z.url().max(2000), z.literal('')]).nullish().transform(v => (v ? v : null))
@@ -83,3 +83,20 @@ export const fileUpdateSchema = z.object({
     grams: z.coerce.number().min(0).max(100_000),
   })).max(16).optional(),
 })
+
+export const printLogSchema = z.object({
+  fileId: z.uuid().nullable().optional(),
+  printedAt: z.coerce.date().optional(),
+  result: z.enum(PRINT_RESULTS),
+  minutes: z.coerce.number().int().min(0).max(100_000).nullable().optional(),
+  notes: optionalText.optional(),
+  filaments: z.array(z.object({
+    filamentId: z.uuid(),
+    grams: z.coerce.number().min(0).max(100_000),
+  })).max(16).default([]),
+  /** Also move the project to "printed" */
+  markPrinted: z.boolean().default(false),
+  /** Also mark the printed file as the final iteration */
+  markFinal: z.boolean().default(false),
+})
+export type PrintLogInput = z.input<typeof printLogSchema>
