@@ -15,9 +15,9 @@
   },
   "dependencies": {
     "@nuxt/ui": "^4.13.0",
+    "@vueuse/core": "^15.0.0",
     "busboy": "^1.6.0",
     "drizzle-orm": "^0.45.4",
-    "motion-v": "^2.13.0",
     "nuxt": "^4.4.5",
     "pg": "^8.23.1",
     "sharp": "^0.35.5",

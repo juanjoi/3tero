@@ -23,6 +23,22 @@
 
 .dark {
   --ui-primary: var(--ui-color-primary-400);
+  --ui-bg: #0B110D;
+}
+
+/* List animations (TransitionGroup name="card"): enter, leave and FLIP reordering */
+.card-move,
+.card-enter-active,
+.card-leave-active {
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
+}
+.card-enter-from,
+.card-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
+}
+.card-leave-active {
+  position: absolute;
 }
 
 @media (prefers-reduced-motion: reduce) {

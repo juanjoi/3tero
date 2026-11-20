@@ -5,6 +5,9 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@vite-pwa/nuxt'],
   css: ['~/assets/css/main.css'],
 
+  // Components are referenced by file name only (no folder prefix)
+  components: [{ path: '~/components', pathPrefix: false }],
+
   experimental: {
     viewTransition: true,
   },
