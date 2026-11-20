@@ -1,4 +1,19 @@
 // List with search, filters and sorting. Raw SQL: aggregates are clearer this way.
+interface Row {
+  id: string
+  title: string
+  status: ProjectStatus
+  priority: Priority
+  source: 'manual' | 'makerworld'
+  createdAt: Date
+  updatedAt: Date
+  coverThumb: string | null
+  tags: { id: string, name: string, color: string | null }[]
+  est_cost: string | null
+  colors: string[]
+  fileCount: number
+}
+
 export default defineEventHandler(async (event) => {
   const query = await getValidatedQuery(event, projectListQuerySchema.parse)
   const params: unknown[] = []
@@ -30,7 +45,7 @@ export default defineEventHandler(async (event) => {
     cost: 'est_cost DESC NULLS LAST, p.updated_at DESC',
   }[query.sort]
 
-  const { rows } = await usePool().query(`
+  const { rows } = await usePool().query<Row>(`
     SELECT p.id, p.title, p.status, p.priority, p.source, p.created_at AS "createdAt", p.updated_at AS "updatedAt",
            img.thumb_path AS "coverThumb",
            COALESCE((SELECT json_agg(json_build_object('id', t.id, 'name', t.name, 'color', t.color) ORDER BY t.name)
@@ -54,11 +69,9 @@ export default defineEventHandler(async (event) => {
     ORDER BY ${orderBy}
     LIMIT 500`, params)
 
-  return rows.map(r => ({
+  return rows.map(({ est_cost, coverThumb, ...r }) => ({
     ...r,
-    estCost: r.est_cost === null ? null : Math.round(Number(r.est_cost) * 100) / 100,
-    est_cost: undefined,
-    coverUrl: r.coverThumb ? `/media/${r.coverThumb}` : null,
-    coverThumb: undefined,
+    estCost: est_cost === null ? null : Math.round(Number(est_cost) * 100) / 100,
+    coverUrl: coverThumb ? `/media/${coverThumb}` : null,
   }))
 })
