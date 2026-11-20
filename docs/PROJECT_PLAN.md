@@ -246,7 +246,7 @@ interface ProjectImporter {
 
 ### 5.4 Tooling
 - **Nuxt UI** (Tailwind CSS, Reka UI primitives): accessible components, theming via design tokens, dark mode.
-- **Motion for Vue (`motion-v`)**: layout, enter/exit, gestures, spring animations.
+- **Vue `TransitionGroup`** with CSS: enter/exit and FLIP reordering of lists.
 - **View Transitions API** (Nuxt `experimental.viewTransition`): page and shared-element transitions.
 - **Iconify** (Lucide / Phosphor) via Nuxt Icon.
 - Typography: one modern sans (e.g. Inter or Geist).
@@ -294,7 +294,7 @@ interface ProjectImporter {
 |---|---|---|
 | Framework | **Nuxt 4** (Vue 3 + Nitro) | Front + API in one codebase. |
 | UI | **Nuxt UI** + Tailwind | Modern components, tokens, dark mode. |
-| Animation | **motion-v** + View Transitions API | Declarative animations, shared-element transitions. |
+| Animation | Vue `<Transition>`/`<TransitionGroup>` (CSS, FLIP reordering) + View Transitions API | No extra dependency; `motion-v` was tried and dropped (SSR-rendered items stayed at their `initial` state). |
 | PWA | **@vite-pwa/nuxt** | Manifest, service worker, share target. |
 | DB | **PostgreSQL + Drizzle ORM** (`node-postgres`) | Reuses the existing server; typed schema in TS; SQL migrations versioned in the repo. |
 | Search | Postgres full-text (`tsvector`, `spanish` config + `unaccent`) + `pg_trgm` | Accent-insensitive, typo-tolerant search with no extra service. |
