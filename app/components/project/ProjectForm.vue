@@ -36,7 +36,7 @@ const state = reactive<FormState>({
   ...(props.initial as Partial<FormState>),
 })
 
-const { data: allTags } = await useFetch<TagWithCount[]>('/api/tags')
+const { data: allTags } = useFetch<TagWithCount[]>('/api/tags')
 const loading = ref(false)
 
 const priorityItems = PRIORITIES.map(p => ({ label: PRIORITY_META[p].label, value: p })).reverse()
