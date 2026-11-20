@@ -7,27 +7,35 @@ const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Color hexadecimal #RRGGB
 
 export const tagNamesSchema = z.array(z.string().trim().min(1).max(40)).max(30)
 
-export const projectCreateSchema = z.object({
+// Base fields without defaults, shared by create and update.
+const projectFields = {
   title: z.string().trim().min(1, 'Obligatorio').max(200),
   description: optionalText,
-  status: z.enum(PROJECT_STATUSES).default('modeling'),
-  priority: z.enum(PRIORITIES).default('medium'),
+  priority: z.enum(PRIORITIES),
   sourceUrl: optionalUrl,
   designer: optionalText,
   designerUrl: optionalUrl,
   license: optionalText,
   notes: optionalText,
-  tags: tagNamesSchema.default([]),
+  tags: tagNamesSchema,
+}
+
+export const projectCreateSchema = z.object({
+  ...projectFields,
+  status: z.enum(PROJECT_STATUSES).default('modeling'),
+  priority: projectFields.priority.default('medium'),
+  tags: projectFields.tags.default([]),
 })
 export type ProjectCreateInput = z.input<typeof projectCreateSchema>
 
-export const projectUpdateSchema = projectCreateSchema
-  .omit({ status: true })
-  .partial()
-  .extend({
-    coverImageId: z.uuid().nullable().optional(),
-    finalFileId: z.uuid().nullable().optional(),
-  })
+/** PATCH semantics: keys that are not sent stay undefined (never defaulted or nulled). */
+export const projectUpdateSchema = z.object({
+  ...Object.fromEntries(Object.entries(projectFields).map(([k, v]) => [k, v.optional()])) as {
+    [K in keyof typeof projectFields]: z.ZodOptional<(typeof projectFields)[K]>
+  },
+  coverImageId: z.uuid().nullable().optional(),
+  finalFileId: z.uuid().nullable().optional(),
+})
 
 export const projectStatusSchema = z.object({ status: z.enum(PROJECT_STATUSES) })
 
@@ -65,8 +73,8 @@ export const projectMaterialsSchema = z.array(z.object({
 })).max(100)
 
 export const fileUpdateSchema = z.object({
-  label: optionalText,
-  notes: optionalText,
+  label: optionalText.optional(),
+  notes: optionalText.optional(),
   estMinutes: z.coerce.number().int().min(0).max(100_000).nullable().optional(),
   final: z.boolean().optional(),
   filaments: z.array(z.object({

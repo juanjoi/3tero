@@ -29,3 +29,17 @@ describe('projectListQuerySchema', () => {
     expect(projectListQuerySchema.safeParse({ status: 'done' }).success).toBe(false)
   })
 })
+
+describe('partial updates', () => {
+  it('fileUpdateSchema leaves missing fields undefined (does not null them)', async () => {
+    const { fileUpdateSchema } = await import('../shared/utils/schemas')
+    const out = fileUpdateSchema.parse({ final: true })
+    expect(out).toEqual({ final: true })
+  })
+
+  it('projectUpdateSchema leaves missing fields undefined', async () => {
+    const { projectUpdateSchema } = await import('../shared/utils/schemas')
+    const out = projectUpdateSchema.parse({ priority: 'high' })
+    expect(out).toEqual({ priority: 'high' })
+  })
+})
