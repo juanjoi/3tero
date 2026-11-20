@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* Design tokens — see docs/design/README.md */
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+
+  --color-status-modeling: #1D4ED8;
+  --color-status-sliced: #6D28D9;
+  --color-status-printed: #15803D;
+  --color-prio-high: #EA580C;
+  --color-prio-medium: #EAB308;
+  --color-prio-low: #94A3B8;
+}
+
+:root {
+  /* green-700 (#15803D) passes AA with white text; Nuxt UI defaults to 500 */
+  --ui-primary: var(--ui-color-primary-700);
+  --ui-bg: #F5F7F5;
+  --ui-radius: 0.75rem;
+}
+
+.dark {
+  --ui-primary: var(--ui-color-primary-400);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
