@@ -1,0 +1,20 @@
+# Local development: PostgreSQL only. The app runs with `npm run dev`.
+services:
+  db:
+    image: postgres:19-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: layra
+      POSTGRES_PASSWORD: layra
+      POSTGRES_DB: layra
+    ports:
+      - "5432:5432"
+    volumes:
+      - layra-pg:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U layra -d layra"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  layra-pg:
