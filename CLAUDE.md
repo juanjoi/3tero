@@ -16,3 +16,4 @@ Read first, in order: `docs/STATUS.md` (where we are), `docs/PROJECT_PLAN.md` (s
 - Dev: `docker compose -f docker-compose.dev.yml up -d --wait && npm run dev`
 - Schema change: edit `server/db/schema.ts` → `npm run db:generate`
 - Checks: `npm run typecheck`, `npm test`, `docker build -t trestero:latest .`
+- Release: tag `vX.Y.Z` on `main` and push the tag → CI publishes `ghcr.io/juanjoi/3tero:X.Y.Z`.

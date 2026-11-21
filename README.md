@@ -44,9 +44,11 @@ Migrations are applied automatically when the server starts. Health: `GET /api/h
 
 ## Production
 
+Each `vX.Y.Z` tag publishes the image `ghcr.io/juanjoi/3tero:X.Y.Z` ([workflow](.github/workflows/image.yml)); every push and pull request runs typecheck, tests and build first. Use the published image instead of building on the host.
+
 1. Create role + database on the PostgreSQL server ([docs/ops/database.md](docs/ops/database.md)).
 2. Copy `docker-compose.yml` and a `.env` (from `.env.example`, with the real `NUXT_DATABASE_URL`) to the host.
-3. `docker compose up -d --build` → container on port 3000 → point the reverse proxy to it.
+3. `docker compose up -d` with `image: ghcr.io/juanjoi/3tero:<version>` (or `--build` to build locally) → container on port 3000 → point the reverse proxy to it.
 4. Back up: **Ajustes → Copia de seguridad** (one ZIP), or `pg_dump` + the `./data` folder ([docs/ops/backup.md](docs/ops/backup.md)).
 
 ## Project layout

@@ -18,6 +18,7 @@
   - Saved filters, tag chips, priority / MakerWorld filters, grid / list view, bulk actions (`/api/bulk/projects`), duplicate project.
   - Statistics `/stats`.
   - Backup / restore ZIP ([ops/backup.md](ops/backup.md)), verified round-trip and invalid-file rejection.
+- **Release pipeline**: GitHub Actions checks every push/PR (typecheck, tests, build) and publishes `ghcr.io/juanjoi/3tero:X.Y.Z` on `vX.Y.Z` tags.
 - Tests: 56 unit tests (cost, schemas, 3MF/STL parsers, MakerWorld importer on a real trimmed fixture).
 - Dev DB contains `[Demo]` projects, imported "Flexi skeleton" and auto-created filaments — safe to delete.
 
