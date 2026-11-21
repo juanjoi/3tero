@@ -9,6 +9,7 @@ Read first, in order: `docs/STATUS.md` (where we are), `docs/PROJECT_PLAN.md` (s
 - Every new config value goes to `.env.example` with a comment.
 - External importers live behind the `ProjectImporter` interface; never bypass anti-bot protections.
 - Respect design tokens in `docs/design/README.md`; animations via transforms/opacity, honour reduced motion.
+- No popups (modals, slide-overs, dropdown menus): inline panels, dedicated pages and `ConfirmButton` — ADR 0006.
 - At the end of a work session, update `docs/STATUS.md` (done / next / blockers).
 
 ## Commands

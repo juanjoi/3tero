@@ -2,29 +2,31 @@
 
 > Update this file at the end of every work session.
 
-**Current phase:** 3 — Prints & 3MF (done) → next: 5 — MakerWorld import
-**Last update:** 2026-11-20
+**Current phase:** MVP + v1.x complete → next: naming decision, real-world use, "Later" items
+**Last update:** 2026-11-21
 
 ## Done
-- Phase 0: plan, ADRs, mockups, research (MakerWorld, Bambu 3MF + parser prototype).
-- Phase 1: Nuxt 4 + Nuxt UI scaffold, theme (light/dark), PWA + share target, Drizzle schema + auto migrations, Docker.
-- Phase 2:
-  - Storage on the data volume: streamed multipart uploads (busboy), size/count limits, total quota (507), WebP re-encoding + thumbnails (sharp), `/media/**` route with path-traversal guard.
-  - API: projects (list with search/filters/sort, CRUD, archive/restore/hard delete, status + history), images, model files (STL/3MF detection, iterations, final flag, filaments & grams per file, download), project materials, filaments & materials catalogue, tags, storage settings.
-  - UI: home (search, status chips, tag filter, sort, animated grid), create/edit form, project detail (gallery with camera upload, status stepper, KPIs, tabs Files/Materials/Notes/Info, file edit modal with live cost), materials catalogue, settings (theme, storage, archived), kanban board (drag & drop + "move to" menu for touch).
-  - Tests: cost utils and validation schemas (16 tests).
-- Phase 3:
-  - `server/lib/bambu3mf.ts` + `server/lib/stl.ts` (pure, unit-tested; verified on 13 real public files): plates, time, grams per filament, printer, bbox, thumbnail.
-  - On upload: file kind auto-detected (sliced/model), time + grams + filaments filled, catalogue matching (type + colour, preferring Bambu preset; unknown filaments auto-created at `NUXT_DEFAULT_FILAMENT_PRICE_PER_KG`), plate thumbnail stored as WebP, A1 mini fit check.
-  - UI: thumbnails, fit badge, 3D viewer (three.js, lazy, STL + project 3MF), hints after upload (new filaments, "move to Laminado", too big).
-  - Print log: API + "Registrar impresión" dialog (pre-filled from the file, live cost, photos, mark printed/final) + timeline tab with total spent. Price per kg is snapshotted per print.
-- Dev DB contains two `[Demo]` projects and two filaments created for manual testing — safe to delete.
+- **Phase 0**: plan, ADRs, mockups, research (MakerWorld, Bambu 3MF + parser prototype).
+- **Phase 1**: Nuxt 4 + Nuxt UI scaffold, theme (light/dark), PWA + share target, Drizzle schema + auto migrations, Docker.
+- **Phase 2**: storage (streamed uploads, limits, quota, WebP), projects/images/files/materials/tags API, home, detail, catalogue, settings, kanban.
+- **Phase 3**: Bambu 3MF + STL parsers (unit-tested, 13 real files), auto-filled file data, thumbnails, A1 mini fit check, 3D viewer, print log with price snapshot.
+- **UI without popups** ([ADR 0006](adr/0006-inline-ui-no-popups.md)): inline catalogue forms, expandable file rows (actions, inline 3D viewer with fullscreen, editor), print log page `/projects/:id/print`, inline project options, `ConfirmButton`, board arrows.
+- **Phase 5 — import**: `server/lib/importers` (`ProjectImporter` registry, MakerWorld: design API → `__NEXT_DATA__` → Open Graph, anti-bot detection without bypass), preview + commit endpoints (cached draft, duplicate detection, images copied from allow-listed CDN, BOM → materials, raw JSON + chosen profile in `project_sources`), `/import` page (Android share target, photo selection, profile picker with A1 mini preselected). Imported profile is the project estimate until a 3MF is uploaded; uploaded 3MF is checked against the imported design.
+- **v1.x**:
+  - Filament stock (`filaments.stock_grams`, deducted by prints, restored when a print is deleted, "not enough filament" warning).
+  - Shopping list `/shopping` (BOM materials + filament shortfalls of pending projects; ticks shared via `settings`).
+  - Saved filters, tag chips, priority / MakerWorld filters, grid / list view, bulk actions (`/api/bulk/projects`), duplicate project.
+  - Statistics `/stats`.
+  - Backup / restore ZIP ([ops/backup.md](ops/backup.md)), verified round-trip and invalid-file rejection.
+- Tests: 56 unit tests (cost, schemas, 3MF/STL parsers, MakerWorld importer on a real trimmed fixture).
+- Dev DB contains `[Demo]` projects, imported "Flexi skeleton" and auto-created filaments — safe to delete.
 
 ## Next steps
-1. [ ] Phase 5 — MakerWorld importer (`docs/research/makerworld.md`): URL parser, design API → `__NEXT_DATA__` → OG fallbacks, profile picker (A1 mini preselected), images copied locally, raw JSON in `project_sources`, Android share target → `/import`.
-2. [ ] Link a 3MF to its MakerWorld project via `DesignModelId` metadata.
-3. [ ] v1.x: backup/export, filament inventory, shopping list, saved filters, stats.
-4. [ ] Parse very large 3MF in a worker thread (today: main thread, ~0.1–0.7 s on real files).
+1. [ ] Choose the final name (candidates in memory/PROJECT_PLAN §1 + Spanish options: Capazo, Panal, Proyectario, 3Dteca…) and rename (manifest, logo, compose, package, DB/role names, docs).
+2. [ ] Deploy on the mini PC (README → Production) and use it for real; collect feedback.
+3. [ ] Small gaps vs PROJECT_PLAN §3: tag colours, markdown rendering for description/notes, group-by in lists, filament type/colour filter, gallery reordering.
+4. [ ] Parse very large 3MF in a worker thread (today main thread, ~0.1–0.7 s on real files; only matters for >100 MB files).
+5. [ ] "Later": other importers (Printables, Thingiverse…) behind `ProjectImporter`; authentication if ever exposed without VPN (ADR 0003).
 
 ## Notes / gotchas
 - `rolldown` is an explicit devDependency: without it `npm ci` inside the Linux Docker build fails (lockfile created on macOS).
@@ -34,8 +36,12 @@
 - `motion-v` was dropped: SSR-rendered items stayed at `initial` (invisible). Use Vue transitions.
 - vue-tsc quirk: an attribute containing `https://` (e.g. `placeholder="https://…"`) makes vue-tsc report a bogus `Property 'value' does not exist` on the next `v-model`. Avoid `//` in static attributes.
 - Components must not use top-level `await useFetch` (only pages): a component mounted later under `v-if` never rendered.
-- **No popups** (user preference): no modals, slideovers or dropdown menus. Use inline expanding panels (`<Transition name="expand">`), dedicated pages (e.g. `/projects/:id/print`) and `ConfirmButton` (two-tap) for destructive actions. Toasts are fine.
+- **No popups** ([ADR 0006](adr/0006-inline-ui-no-popups.md)): no modals, slide-overs or dropdown menus. Inline panels, dedicated pages, `ConfirmButton` (two taps). Toasts are fine.
 - Docker Desktop disk can fill up (Postgres then fails with "No space left on device"): `docker builder prune`.
 
+- API routes under `/api/projects/<word>` collide with `/api/projects/:id` in Nitro typed fetch (types become `{}`): bulk lives at `/api/bulk/projects`.
+- MakerWorld `DesignModelId` inside a 3MF is the design `modelId` hash, not the URL id (see research/bambu-3mf.md).
+- Editing server files while a request is in flight restarts Nitro in dev and drops that request (seen with uploads).
+
 ## Blockers / open questions
-- Final name (working name: Layra; options in PROJECT_PLAN §1).
+- Final name (working name: Layra).

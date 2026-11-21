@@ -28,6 +28,6 @@ Moving to another machine: install with Docker (README), open the app, restore t
 ## 2. Infrastructure backup (optional, for automation)
 
 - Database: `pg_dump -Fc layra > layra.dump` (see [database.md](database.md)).
-- Files: copy the `layra-data` volume (`docker run --rm -v layra-data:/data -v $PWD:/out alpine tar czf /out/data.tgz -C /data .`).
+- Files: copy the `./data` folder mounted by `docker-compose.yml` (`tar czf data.tgz -C ./data projects`).
 
 Run both at the same moment so database rows and files match.

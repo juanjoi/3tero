@@ -186,19 +186,19 @@ interface ProjectImporter {
 
 | # | Feature | Phase |
 |---|---|---|
-| 1 | Project CRUD, gallery (incl. camera upload), tags, materials catalogue | MVP |
-| 2 | Model file iterations + in-browser 3D viewer (STL/3MF) | MVP |
-| 3 | Print log + real cost | MVP |
-| 4 | Status workflow + kanban | MVP |
-| 5 | Search, filters, sort, grouping | MVP |
-| 6 | MakerWorld import + Android share target | MVP |
-| 7 | Auto-extract grams/time/filaments/plates/thumbnails from Bambu 3MF ([research](research/bambu-3mf.md)) | **MVP** |
-| 8 | Backup / export (ZIP with JSON + files) and restore | v1.x |
-| 9 | Filament inventory (spools, remaining grams) — "can I print this now?" | v1.x |
-| 10 | Shopping list from materials of `high` priority projects | v1.x |
-| 11 | Saved filters / smart collections | v1.x |
-| 12 | Build-volume check: warn if a model exceeds 180×180×180 mm (mesh bbox / slicer `outside` flag) | MVP |
-| 13 | Stats dashboard: prints per month, success rate, grams & € spent | Later |
+| 1 | Project CRUD, gallery (incl. camera upload), tags, materials catalogue | MVP ✅ |
+| 2 | Model file iterations + in-browser 3D viewer (STL/3MF) | MVP ✅ |
+| 3 | Print log + real cost | MVP ✅ |
+| 4 | Status workflow + kanban | MVP ✅ |
+| 5 | Search, filters, sort, grouping | MVP ✅ |
+| 6 | MakerWorld import + Android share target | MVP ✅ |
+| 7 | Auto-extract grams/time/filaments/plates/thumbnails from Bambu 3MF ([research](research/bambu-3mf.md)) | **MVP** ✅ |
+| 8 | Backup / export (ZIP with JSON + files) and restore | v1.x ✅ |
+| 9 | Filament inventory (remaining grams per filament) — "can I print this now?" | v1.x ✅ |
+| 10 | Shopping list from materials of pending projects (filter: high priority) | v1.x ✅ |
+| 11 | Saved filters / smart collections | v1.x ✅ |
+| 12 | Build-volume check: warn if a model exceeds 180×180×180 mm (mesh bbox / slicer `outside` flag) | MVP ✅ |
+| 13 | Stats dashboard: prints per month, success rate, grams & € spent | ✅ (done early) |
 | 14 | Other platforms' importers (Printables, Thingiverse…) | Later |
 | 15 | Users / authentication | Later (if needed) |
 

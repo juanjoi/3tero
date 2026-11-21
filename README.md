@@ -2,7 +2,17 @@
 
 Self-hosted PWA to manage the family's 3D printing projects: model iterations (STL/3MF), photos, materials, cost, priority, status, tags, print log and MakerWorld import.
 
-Status: **phase 1 — foundations** · see [docs/STATUS.md](docs/STATUS.md).
+Status: **MVP + v1.x complete** · see [docs/STATUS.md](docs/STATUS.md).
+
+## Features
+
+- Projects with photo gallery (camera upload), tags, priority, status (modeling → sliced → printed) with history, notes, duplicate, archive.
+- Model files as iterations (STL / 3MF): Bambu Studio / OrcaSlicer 3MF auto-fills time, grams per filament, plates, thumbnail; A1 mini build-volume check; in-browser 3D viewer.
+- Print log with real grams, time, photos and cost (price snapshot); total spent per project.
+- Filament & materials catalogue with stock tracking ("not enough filament" warning).
+- MakerWorld import: paste or share a link from Android → title, photos, tags, designer, license, print profile (A1 mini preselected), bill of materials.
+- Home: search, status / tag / priority / source filters, saved filters, grid or list, bulk actions; kanban board.
+- Shopping list, statistics, full backup / restore (ZIP).
 
 ## Quick start (development)
 
@@ -33,7 +43,7 @@ Migrations are applied automatically when the server starts. Health: `GET /api/h
 1. Create role + database on the PostgreSQL server ([docs/ops/database.md](docs/ops/database.md)).
 2. Copy `docker-compose.yml` and a `.env` (from `.env.example`, with the real `NUXT_DATABASE_URL`) to the host.
 3. `docker compose up -d --build` → container on port 3000 → point the reverse proxy to it.
-4. Back up: `pg_dump` + the `./data` folder.
+4. Back up: **Ajustes → Copia de seguridad** (one ZIP), or `pg_dump` + the `./data` folder ([docs/ops/backup.md](docs/ops/backup.md)).
 
 ## Project layout
 
@@ -42,7 +52,10 @@ app/                 Vue frontend (pages, layouts, components, theme)
 server/api/          REST endpoints (Nitro)
 server/db/           Drizzle schema + SQL migrations
 server/plugins/      startup migrator (advisory lock)
-server/utils/        db client and shared helpers
+server/utils/        db client, storage, projects, imports, backup helpers
+server/lib/          pure, unit-tested parsers: Bambu 3MF, STL, importers (MakerWorld)
+shared/utils/        domain constants, zod schemas, cost helpers (client + server)
+test/                vitest unit tests (+ fixtures)
 public/              PWA icons
 docs/                plan, status, ADRs, design, research, ops
 ```
