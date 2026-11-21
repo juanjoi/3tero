@@ -1,7 +1,11 @@
 <script setup lang="ts">
-const props = defineProps<{ project: ProjectDetail }>()
-const emit = defineEmits<{ update: [project: ProjectDetail] }>()
-const open = defineModel<boolean>('open', { default: false })
+// Full page (not a popup) to log a print attempt of a project.
+const route = useRoute()
+const id = route.params.id as string
+const { data: project, error } = await useFetch(`/api/projects/${id}`)
+if (error.value || !project.value) throw createError({ statusCode: 404, statusMessage: 'Proyecto no encontrado', fatal: true })
+const props = { project: project.value! }
+useHead({ title: () => `Registrar impresión · ${props.project.title}` })
 const onError = useApiError()
 const toast = useToast()
 const { upload } = useUpload()
@@ -68,14 +72,12 @@ async function save() {
         markFinal: state.markFinal && !!state.fileId,
       },
     })
-    let updated = res._data!
     const printId = res.headers.get('x-print-id')
     if (photos.value.length && printId) {
-      updated = await upload<ProjectDetail>(`/api/projects/${props.project.id}/prints/${printId}/images`, photos.value)
+      await upload<ProjectDetail>(`/api/projects/${props.project.id}/prints/${printId}/images`, photos.value)
     }
-    emit('update', updated)
     toast.add({ title: 'Impresión registrada', icon: 'i-lucide-printer' })
-    open.value = false
+    await navigateTo({ path: `/projects/${id}`, query: { tab: 'prints' } }, { replace: true })
   }
   catch (err) {
     onError(err, 'No se pudo registrar la impresión')
@@ -87,8 +89,15 @@ async function save() {
 </script>
 
 <template>
-  <UModal v-model:open="open" title="Registrar impresión" :ui="{ content: 'sm:max-w-lg' }">
-    <template #body>
+  <div class="mx-auto flex max-w-xl flex-col gap-5 px-4 pt-5">
+    <div class="flex items-center gap-2">
+      <UButton :to="`/projects/${id}`" icon="i-lucide-arrow-left" color="neutral" variant="ghost" aria-label="Volver" />
+      <div class="flex min-w-0 flex-col">
+        <h1 class="font-display text-xl font-bold">Registrar impresión</h1>
+        <span class="truncate text-sm text-muted">{{ props.project.title }}</span>
+      </div>
+    </div>
+
       <div class="flex flex-col gap-4">
         <UFormField v-if="fileItems.length" label="Fichero impreso">
           <USelect v-model="state.fileId" :items="fileItems" class="w-full" />
@@ -150,12 +159,14 @@ async function save() {
         </UFormField>
 
         <div class="flex flex-col gap-2 rounded-xl bg-primary/5 p-3">
-          <UCheckbox v-if="project.status !== 'printed'" v-model="state.markPrinted" label="Marcar el proyecto como «Impreso»" />
+          <UCheckbox v-if="props.project.status !== 'printed'" v-model="state.markPrinted" label="Marcar el proyecto como «Impreso»" />
           <UCheckbox v-if="state.fileId" v-model="state.markFinal" label="Marcar este fichero como versión final" />
         </div>
       </div>
-    </template>
-    <template #footer>
+
+    <!-- Sticky bottom bar: live cost + save -->
+    <div class="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-default bg-default/95 px-4 py-3 backdrop-blur md:bottom-0">
+      <div>
       <div class="flex w-full items-center gap-3">
         <div class="flex flex-col">
           <span class="text-[11px] text-muted">Coste</span>
@@ -163,6 +174,7 @@ async function save() {
         </div>
         <UButton label="Guardar" size="lg" class="flex-1 justify-center" :loading="saving" @click="save" />
       </div>
-    </template>
-  </UModal>
+      </div>
+    </div>
+  </div>
 </template>

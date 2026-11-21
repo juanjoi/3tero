@@ -7,18 +7,29 @@ const { upload, progress, uploading, header } = useUpload()
 const input = useTemplateRef<HTMLInputElement>('input')
 const { data: limits } = useFetch('/api/settings/storage', { key: 'storage' })
 
-const viewing = ref<ProjectFile | null>(null)
-const viewOpen = ref(false)
+// Expanded row (no popups): actions bar + inline 3D viewer or inline editor
+const openId = ref<string | null>(null)
+const mode = ref<'actions' | 'view' | 'edit'>('actions')
+function toggle(f: ProjectFile) {
+  if (openId.value === f.id) { openId.value = null; return }
+  openId.value = f.id
+  mode.value = 'actions'
+}
 function view(f: ProjectFile) {
-  viewing.value = f
-  viewOpen.value = true
+  openId.value = f.id
+  mode.value = 'view'
+}
+function edit(f: ProjectFile) {
+  openId.value = f.id
+  mode.value = 'edit'
 }
 
-const editing = ref<ProjectFile | null>(null)
-const editOpen = ref(false)
-function edit(f: ProjectFile) {
-  editing.value = f
-  editOpen.value = true
+const viewerBox = useTemplateRef<HTMLElement[]>('viewerBox')
+function fullscreen() {
+  const el = viewerBox.value?.[0]
+  if (!el) return
+  if (document.fullscreenElement) document.exitFullscreen()
+  else el.requestFullscreen?.().catch(() => {})
 }
 
 async function onFile(e: Event) {
@@ -85,21 +96,9 @@ async function patch(f: ProjectFile, body: Record<string, unknown>) {
 async function remove(f: ProjectFile) {
   try {
     emit('update', await $fetch(`/api/projects/${props.project.id}/files/${f.id}`, { method: 'DELETE' }))
+    openId.value = null
   }
   catch (err) { onError(err) }
-}
-
-function menu(f: ProjectFile) {
-  return [[
-    ...(f.kind === 'model' ? [{ label: 'Ver en 3D', icon: 'i-lucide-rotate-3d', onSelect: () => view(f) }] : []),
-    { label: 'Editar datos', icon: 'i-lucide-pencil', onSelect: () => edit(f) },
-    f.final
-      ? { label: 'Quitar como final', icon: 'i-lucide-star-off', onSelect: () => patch(f, { final: false }) }
-      : { label: 'Marcar como final', icon: 'i-lucide-star', onSelect: () => patch(f, { final: true }) },
-    { label: 'Descargar', icon: 'i-lucide-download', to: `/api/projects/${props.project.id}/files/${f.id}/download`, external: true, target: '_blank' },
-  ], [
-    { label: 'Borrar', icon: 'i-lucide-trash-2', color: 'error' as const, onSelect: () => remove(f) },
-  ]]
 }
 
 function meta(f: ProjectFile) {
@@ -118,40 +117,97 @@ function meta(f: ProjectFile) {
     <div
       v-for="f in project.files"
       :key="f.id"
-      class="flex items-center gap-3 rounded-2xl border p-3 transition-colors"
+      class="flex flex-col rounded-2xl border transition-colors"
       :class="f.final ? 'border-primary bg-primary/5' : 'border-default bg-default'"
     >
-      <button
-        type="button"
-        class="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-elevated text-xs font-bold uppercase text-toned"
-        :aria-label="f.kind === 'model' ? 'Ver en 3D' : f.originalName"
-        :disabled="f.kind !== 'model'"
-        @click="view(f)"
-      >
-        <img v-if="f.thumbnailUrl" :src="f.thumbnailUrl" alt="" class="size-full object-contain">
-        <span v-else>{{ f.format }}</span>
-        <UIcon v-if="f.kind === 'model'" name="i-lucide-rotate-3d" class="absolute bottom-0.5 right-0.5 size-3.5 text-muted" />
-      </button>
-      <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div class="flex items-center gap-1.5">
-          <span class="truncate text-sm font-semibold">{{ f.label ?? f.originalName }}</span>
-          <UBadge v-if="f.final" label="FINAL" size="sm" class="font-bold" />
-          <UTooltip v-if="f.fitsPrinter !== null" :text="f.fitsPrinter ? 'Cabe en la A1 mini' : 'No cabe en la A1 mini (180×180×180 mm)'">
+      <div class="flex items-center gap-3 p-3">
+        <button
+          type="button"
+          class="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-elevated text-xs font-bold uppercase text-toned"
+          :aria-label="f.kind === 'model' ? 'Ver en 3D' : f.originalName"
+          @click="f.kind === 'model' ? view(f) : toggle(f)"
+        >
+          <img v-if="f.thumbnailUrl" :src="f.thumbnailUrl" alt="" class="size-full object-contain">
+          <span v-else>{{ f.format }}</span>
+          <UIcon v-if="f.kind === 'model'" name="i-lucide-rotate-3d" class="absolute bottom-0.5 right-0.5 size-3.5 text-muted" />
+        </button>
+        <button type="button" class="flex min-w-0 flex-1 flex-col gap-0.5 text-left" @click="toggle(f)">
+          <div class="flex items-center gap-1.5">
+            <span class="truncate text-sm font-semibold">{{ f.label ?? f.originalName }}</span>
+            <UBadge v-if="f.final" label="FINAL" size="sm" class="font-bold" />
             <UIcon
+              v-if="f.fitsPrinter !== null"
               :name="f.fitsPrinter ? 'i-lucide-check-circle-2' : 'i-lucide-triangle-alert'"
               class="size-4 shrink-0"
               :class="f.fitsPrinter ? 'text-primary' : 'text-warning'"
+              :aria-label="f.fitsPrinter ? 'Cabe en la A1 mini' : 'No cabe en la A1 mini'"
             />
-          </UTooltip>
-        </div>
-        <span class="truncate text-xs text-muted">{{ meta(f) }}</span>
-        <div v-if="f.filaments.length" class="mt-0.5 flex">
-          <ColorSwatches :colors="f.filaments.map(x => x.colorHex)" />
-        </div>
+          </div>
+          <span class="truncate text-xs text-muted">{{ meta(f) }}</span>
+          <div v-if="f.filaments.length" class="mt-0.5 flex">
+            <ColorSwatches :colors="f.filaments.map(x => x.colorHex)" />
+          </div>
+        </button>
+        <UButton
+          :icon="openId === f.id ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+          variant="ghost"
+          color="neutral"
+          :aria-label="openId === f.id ? 'Cerrar' : 'Acciones'"
+          @click="toggle(f)"
+        />
       </div>
-      <UDropdownMenu :items="menu(f)">
-        <UButton icon="i-lucide-ellipsis-vertical" variant="ghost" color="neutral" aria-label="Acciones" />
-      </UDropdownMenu>
+
+      <Transition name="expand">
+        <div v-if="openId === f.id" class="flex flex-col gap-3 border-t border-default p-3">
+          <p v-if="f.fitsPrinter === false" class="flex items-center gap-1.5 text-xs text-warning">
+            <UIcon name="i-lucide-triangle-alert" /> No cabe en la A1 mini (180 × 180 × 180 mm)
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <UButton
+              v-if="f.kind === 'model'"
+              size="sm"
+              icon="i-lucide-rotate-3d"
+              label="Ver en 3D"
+              :variant="mode === 'view' ? 'soft' : 'outline'"
+              color="neutral"
+              @click="mode = mode === 'view' ? 'actions' : 'view'"
+            />
+            <UButton size="sm" icon="i-lucide-pencil" label="Editar datos" :variant="mode === 'edit' ? 'soft' : 'outline'" color="neutral" @click="mode = mode === 'edit' ? 'actions' : 'edit'" />
+            <UButton
+              size="sm"
+              :icon="f.final ? 'i-lucide-star-off' : 'i-lucide-star'"
+              :label="f.final ? 'Quitar final' : 'Marcar final'"
+              variant="outline"
+              color="neutral"
+              @click="patch(f, { final: !f.final })"
+            />
+            <UButton
+              size="sm"
+              icon="i-lucide-download"
+              label="Descargar"
+              variant="outline"
+              color="neutral"
+              :to="`/api/projects/${project.id}/files/${f.id}/download`"
+              external
+              target="_blank"
+            />
+            <ConfirmButton size="sm" label="Borrar" confirm-label="¿Borrar fichero?" class="ml-auto" @confirm="remove(f)" />
+          </div>
+
+          <div v-if="mode === 'view' && f.kind === 'model'" ref="viewerBox" class="viewer-box relative overflow-hidden rounded-xl bg-elevated">
+            <ClientOnly>
+              <ModelViewer :url="f.url" :format="f.format" :color="f.filaments[0]?.colorHex" class="h-[55dvh] min-h-72" />
+            </ClientOnly>
+            <div class="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-2">
+              <span v-if="f.bboxX" class="rounded-lg bg-default/80 px-2 py-1 text-xs">{{ f.bboxX }} × {{ f.bboxY }} × {{ f.bboxZ ?? '?' }} mm</span>
+              <span v-else />
+              <UButton icon="i-lucide-maximize" size="sm" color="neutral" variant="soft" aria-label="Pantalla completa" class="pointer-events-auto bg-default/80" @click="fullscreen" />
+            </div>
+          </div>
+
+          <FileEditor v-if="mode === 'edit'" :key="f.id" :project="project" :file="f" @update="emit('update', $event)" @close="mode = 'actions'" />
+        </div>
+      </Transition>
     </div>
 
     <UEmpty
@@ -172,28 +228,5 @@ function meta(f: ProjectFile) {
       @click="input?.click()"
     />
     <input ref="input" type="file" accept=".stl,.3mf" class="hidden" @change="onFile">
-
-    <UModal v-model:open="viewOpen" :title="viewing?.label ?? viewing?.originalName" :description="viewing?.bboxX ? `${viewing.bboxX} × ${viewing.bboxY} × ${viewing.bboxZ ?? '?'} mm` : undefined" fullscreen>
-      <template #body>
-        <ClientOnly>
-          <ModelViewer
-            v-if="viewing && viewOpen"
-            :url="viewing.url"
-            :format="viewing.format"
-            :color="viewing.filaments[0]?.colorHex"
-            class="h-full min-h-[60dvh]"
-          />
-        </ClientOnly>
-      </template>
-    </UModal>
-
-    <FileEditModal
-      v-if="editing"
-      :key="editing.id"
-      v-model:open="editOpen"
-      :project="project"
-      :file="editing"
-      @update="emit('update', $event)"
-    />
   </div>
 </template>

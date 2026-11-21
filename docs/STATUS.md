@@ -32,8 +32,9 @@
 - Components are auto-imported **without folder prefix** (`pathPrefix: false`): keep file names unique.
 - PATCH schemas must not default or null missing keys (`projectUpdateSchema`, `fileUpdateSchema` — covered by tests).
 - `motion-v` was dropped: SSR-rendered items stayed at `initial` (invisible). Use Vue transitions.
-- vue-tsc quirk: a `v-model` on a field placed right after a `<UCollapsible>` with `#content` slot reported a bogus `.value` error; moving the field before it fixed it.
-- Components must not use top-level `await useFetch` (only pages): a component mounted later under `v-if` (dialogs) never rendered.
+- vue-tsc quirk: an attribute containing `https://` (e.g. `placeholder="https://…"`) makes vue-tsc report a bogus `Property 'value' does not exist` on the next `v-model`. Avoid `//` in static attributes.
+- Components must not use top-level `await useFetch` (only pages): a component mounted later under `v-if` never rendered.
+- **No popups** (user preference): no modals, slideovers or dropdown menus. Use inline expanding panels (`<Transition name="expand">`), dedicated pages (e.g. `/projects/:id/print`) and `ConfirmButton` (two-tap) for destructive actions. Toasts are fine.
 - Docker Desktop disk can fill up (Postgres then fails with "No space left on device"): `docker builder prune`.
 
 ## Blockers / open questions

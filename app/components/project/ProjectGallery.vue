@@ -45,11 +45,6 @@ async function remove() {
   catch (err) { onError(err) }
 }
 
-const menu = computed(() => [[
-  { label: 'Añadir fotos', icon: 'i-lucide-image-plus', onSelect: () => input.value?.click() },
-  ...(active.value && current.value !== 0 ? [{ label: 'Usar como portada', icon: 'i-lucide-star', onSelect: setCover }] : []),
-  ...(active.value ? [{ label: 'Borrar esta foto', icon: 'i-lucide-trash-2', color: 'error' as const, onSelect: remove }] : []),
-]])
 </script>
 
 <template>
@@ -88,9 +83,10 @@ const menu = computed(() => [[
     </template>
 
     <div class="absolute right-3 top-3 flex gap-2">
-      <UDropdownMenu :items="menu">
-        <UButton icon="i-lucide-images" color="neutral" variant="soft" class="rounded-xl bg-default/90" aria-label="Fotos" />
-      </UDropdownMenu>
+      <!-- Direct photo actions on the hero (no menus) -->
+      <UButton v-if="active && current !== 0" icon="i-lucide-star" color="neutral" variant="soft" class="rounded-xl bg-default/90" aria-label="Usar como portada" @click="setCover" />
+      <ConfirmButton v-if="active" icon="i-lucide-trash-2" confirm-label="¿Borrar foto?" class="rounded-xl bg-default/90" @confirm="remove" />
+      <UButton icon="i-lucide-image-plus" color="neutral" variant="soft" class="rounded-xl bg-default/90" aria-label="Añadir fotos" @click="input?.click()" />
     </div>
 
     <div v-if="uploading" class="absolute inset-x-0 bottom-0 bg-default/90 p-3">

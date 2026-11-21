@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{ project: ProjectDetail }>()
-const emit = defineEmits<{ update: [project: ProjectDetail], log: [] }>()
+const emit = defineEmits<{ update: [project: ProjectDetail] }>()
 const onError = useApiError()
 const { upload } = useUpload()
 
@@ -51,9 +51,8 @@ async function onPhotos(e: Event) {
           <span class="text-sm font-semibold">{{ p.fileLabel ?? 'Sin fichero' }} · {{ RESULT_META[p.result].label }}</span>
           <div class="flex items-center gap-1">
             <span class="text-sm font-semibold">{{ formatEuro(p.cost) }}</span>
-            <UDropdownMenu :items="[[{ label: 'Añadir fotos', icon: 'i-lucide-camera', onSelect: () => addPhotos(p.id) }], [{ label: 'Borrar', icon: 'i-lucide-trash-2', color: 'error', onSelect: () => remove(p.id) }]]">
-              <UButton icon="i-lucide-ellipsis-vertical" size="xs" variant="ghost" color="neutral" aria-label="Acciones" />
-            </UDropdownMenu>
+            <UButton icon="i-lucide-camera" size="xs" variant="ghost" color="neutral" aria-label="Añadir fotos" @click="addPhotos(p.id)" />
+            <ConfirmButton size="xs" confirm-label="¿Borrar?" @confirm="remove(p.id)" />
           </div>
         </div>
         <span class="text-xs text-muted">{{ meta(p) }}</span>
@@ -73,7 +72,7 @@ async function onPhotos(e: Event) {
       title="Sin impresiones"
       description="Registra cada intento: resultado, gramos reales, tiempo y una foto."
       size="sm"
-      :actions="[{ label: 'Registrar impresión', icon: 'i-lucide-plus', onClick: () => emit('log') }]"
+      :actions="[{ label: 'Registrar impresión', icon: 'i-lucide-plus', to: `/projects/${project.id}/print` }]"
     />
     <div v-else class="flex justify-between border-t border-default pt-3 text-sm">
       <span class="text-muted">Total gastado ({{ project.prints.length }} impresión{{ project.prints.length === 1 ? '' : 'es' }})</span>

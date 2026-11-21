@@ -41,9 +41,30 @@
   position: absolute;
 }
 
+/* Inline panels that open in place (no popups): <Transition name="expand"> */
+.expand-enter-active,
+.expand-leave-active {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
+  transform-origin: top;
+}
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scaleY(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Inline 3D viewer taken fullscreen with the Fullscreen API */
+.viewer-box:fullscreen {
+  border-radius: 0;
+  background: var(--ui-bg);
+}
+.viewer-box:fullscreen > :first-child {
+  height: 100dvh;
 }

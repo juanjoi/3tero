@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { DropdownMenuItem } from '@nuxt/ui'
-
 const route = useRoute()
 const id = route.params.id as string
 const onError = useApiError()
@@ -13,7 +11,11 @@ const update = (next: ProjectDetail) => (project.value = next)
 
 useHead({ title: () => `${p.value.title} · Layra` })
 
-const tab = ref('files')
+// Active tab lives in the URL (?tab=prints) so other pages can link to it
+const tab = computed({
+  get: () => (route.query.tab as string) || 'files',
+  set: v => navigateTo({ query: { ...route.query, tab: v } }, { replace: true }),
+})
 const tabs = computed(() => [
   { label: 'Ficheros', value: 'files', slot: 'files' as const, badge: p.value.files.length || undefined },
   { label: 'Impresiones', value: 'prints', slot: 'prints' as const, badge: p.value.prints.length || undefined },
@@ -22,7 +24,7 @@ const tabs = computed(() => [
   { label: 'Info', value: 'info', slot: 'info' as const },
 ])
 
-const logOpen = ref(false)
+const manageOpen = ref(false)
 
 const changingStatus = ref(false)
 async function changeStatus(status: ProjectStatus) {
@@ -69,7 +71,6 @@ async function restore() {
   catch (err) { onError(err) }
 }
 
-const confirmDelete = ref(false)
 async function hardDelete() {
   try {
     await $fetch(`/api/projects/${id}`, { method: 'DELETE', query: { hard: 'true' } })
@@ -79,21 +80,6 @@ async function hardDelete() {
   catch (err) { onError(err) }
 }
 
-const menu = computed<DropdownMenuItem[][]>(() => [
-  [{ label: 'Editar', icon: 'i-lucide-pencil', to: `/projects/${id}/edit` }],
-  [{ type: 'label' as const, label: 'Prioridad' }, ...PRIORITIES.slice().reverse().map(pr => ({
-    label: PRIORITY_META[pr].label,
-    type: 'checkbox' as const,
-    checked: p.value.priority === pr,
-    onSelect: () => setPriority(pr),
-  }))],
-  [
-    p.value.archivedAt
-      ? { label: 'Restaurar', icon: 'i-lucide-archive-restore', onSelect: restore }
-      : { label: 'Archivar', icon: 'i-lucide-archive', onSelect: archive },
-    { label: 'Borrar definitivamente', icon: 'i-lucide-trash-2', color: 'error' as const, onSelect: () => (confirmDelete.value = true) },
-  ],
-])
 </script>
 
 <template>
@@ -130,9 +116,14 @@ const menu = computed<DropdownMenuItem[][]>(() => [
             <h1 class="flex-1 font-display text-2xl font-bold leading-tight tracking-tight md:text-3xl">
               {{ p.title }}
             </h1>
-            <UDropdownMenu :items="menu">
-              <UButton icon="i-lucide-ellipsis" color="neutral" variant="ghost" aria-label="Más opciones" />
-            </UDropdownMenu>
+            <UButton
+              :icon="manageOpen ? 'i-lucide-x' : 'i-lucide-ellipsis'"
+              color="neutral"
+              :variant="manageOpen ? 'soft' : 'ghost'"
+              :aria-label="manageOpen ? 'Cerrar opciones' : 'Más opciones'"
+              :aria-expanded="manageOpen"
+              @click="manageOpen = !manageOpen"
+            />
           </div>
           <p v-if="p.designer || p.license" class="text-sm text-muted">
             <span v-if="p.source === 'makerworld'">MakerWorld · </span>
@@ -140,6 +131,37 @@ const menu = computed<DropdownMenuItem[][]>(() => [
             <span v-if="p.license"> · {{ p.license }}</span>
           </p>
         </div>
+
+        <!-- Inline management panel (no popups) -->
+        <Transition name="expand">
+          <div v-if="manageOpen" class="flex flex-col gap-3 rounded-2xl border border-default bg-elevated/50 p-3">
+            <div class="flex flex-col gap-1.5">
+              <span class="text-xs font-medium text-muted">Prioridad</span>
+              <div class="grid grid-cols-3 gap-1.5">
+                <UButton
+                  v-for="pr in PRIORITIES.slice().reverse()"
+                  :key="pr"
+                  :label="PRIORITY_META[pr].label"
+                  size="sm"
+                  :variant="p.priority === pr ? 'soft' : 'outline'"
+                  :color="p.priority === pr ? 'primary' : 'neutral'"
+                  class="justify-center"
+                  @click="setPriority(pr)"
+                >
+                  <template #leading>
+                    <span class="size-2 rounded-full" :style="{ background: PRIORITY_META[pr].color }" />
+                  </template>
+                </UButton>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <UButton :to="`/projects/${id}/edit`" icon="i-lucide-pencil" label="Editar" size="sm" variant="outline" color="neutral" />
+              <UButton v-if="p.archivedAt" icon="i-lucide-archive-restore" label="Restaurar" size="sm" variant="outline" color="neutral" @click="restore" />
+              <UButton v-else icon="i-lucide-archive" label="Archivar" size="sm" variant="outline" color="neutral" @click="archive" />
+              <ConfirmButton label="Borrar" size="sm" confirm-label="Se borra todo. ¿Seguro?" class="ml-auto" @confirm="hardDelete" />
+            </div>
+          </div>
+        </Transition>
 
         <StatusStepper :status="p.status" :busy="changingStatus" @change="changeStatus" />
 
@@ -159,13 +181,13 @@ const menu = computed<DropdownMenuItem[][]>(() => [
         </div>
 
         <div class="flex gap-2">
-          <UButton icon="i-lucide-printer" label="Registrar impresión" size="lg" class="flex-1 justify-center" @click="logOpen = true" />
+          <UButton icon="i-lucide-printer" label="Registrar impresión" size="lg" class="flex-1 justify-center" :to="`/projects/${id}/print`" />
           <UButton :to="`/projects/${id}/edit`" icon="i-lucide-pencil" size="lg" variant="outline" color="neutral" aria-label="Editar" />
         </div>
 
         <UTabs v-model="tab" :items="tabs" variant="link" :ui="{ list: 'overflow-x-auto overflow-y-hidden', trigger: 'shrink-0' }" class="w-full">
           <template #prints>
-            <PrintsPanel :project="p" class="pt-3" @update="update" @log="logOpen = true" />
+            <PrintsPanel :project="p" class="pt-3" @update="update" />
           </template>
           <template #files>
             <FilesPanel :project="p" class="pt-3" @update="update" />
@@ -204,15 +226,5 @@ const menu = computed<DropdownMenuItem[][]>(() => [
       </section>
     </div>
 
-    <LogPrintModal v-if="logOpen" v-model:open="logOpen" :project="p" @update="update($event); tab = 'prints'" />
-
-    <UModal v-model:open="confirmDelete" title="¿Borrar definitivamente?" description="Se borrarán el proyecto, sus fotos y ficheros. No se puede deshacer.">
-      <template #footer>
-        <div class="flex w-full justify-end gap-2">
-          <UButton label="Cancelar" variant="ghost" color="neutral" @click="confirmDelete = false" />
-          <UButton label="Borrar" color="error" icon="i-lucide-trash-2" @click="hardDelete" />
-        </div>
-      </template>
-    </UModal>
   </div>
 </template>

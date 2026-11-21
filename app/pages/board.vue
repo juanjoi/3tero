@@ -32,11 +32,11 @@ function onDrop(status: ProjectStatus) {
   over.value = null
 }
 
-const moveMenu = (p: ProjectListItem) => [PROJECT_STATUSES.filter(s => s !== p.status).map(s => ({
-  label: `Mover a ${STATUS_META[s].label}`,
-  icon: STATUS_META[s].icon,
-  onSelect: () => move(p.id, s),
-}))]
+// Touch-friendly move: arrows to the previous / next status (drag & drop stays for mouse)
+function shift(p: ProjectListItem, delta: -1 | 1) {
+  const next = PROJECT_STATUSES[PROJECT_STATUSES.indexOf(p.status) + delta]
+  if (next) move(p.id, next)
+}
 </script>
 
 <template>
@@ -81,9 +81,27 @@ const moveMenu = (p: ProjectListItem) => [PROJECT_STATUSES.filter(s => s !== p.s
                 {{ p.estCost !== null ? formatEuro(p.estCost) : `${p.fileCount} fichero${p.fileCount === 1 ? '' : 's'}` }}
               </span>
             </NuxtLink>
-            <UDropdownMenu :items="moveMenu(p)">
-              <UButton icon="i-lucide-ellipsis-vertical" size="sm" variant="ghost" color="neutral" aria-label="Mover" class="self-start" />
-            </UDropdownMenu>
+            <div class="flex flex-col justify-between">
+              <UButton
+                v-if="p.status !== PROJECT_STATUSES[PROJECT_STATUSES.length - 1]"
+                icon="i-lucide-chevron-right"
+                size="xs"
+                variant="ghost"
+                color="neutral"
+                :aria-label="`Mover a ${STATUS_META[PROJECT_STATUSES[PROJECT_STATUSES.indexOf(p.status) + 1]!].label}`"
+                @click="shift(p, 1)"
+              />
+              <UButton
+                v-if="p.status !== PROJECT_STATUSES[0]"
+                icon="i-lucide-chevron-left"
+                size="xs"
+                variant="ghost"
+                color="neutral"
+                :aria-label="`Mover a ${STATUS_META[PROJECT_STATUSES[PROJECT_STATUSES.indexOf(p.status) - 1]!].label}`"
+                class="mt-auto"
+                @click="shift(p, -1)"
+              />
+            </div>
           </div>
         </TransitionGroup>
 
