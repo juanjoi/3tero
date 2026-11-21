@@ -36,6 +36,10 @@ export default defineNuxtConfig({
       maxImagesPerProject: 30,
       storageQuotaGb: 20,
     },
+    public: {
+      /** Printer the family owns: imports preselect profiles sliced for it (MakerWorld names, e.g. "A1 mini") */
+      printerModel: 'A1 mini',
+    },
   },
 
   pwa: {

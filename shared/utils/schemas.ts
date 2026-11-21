@@ -100,3 +100,19 @@ export const printLogSchema = z.object({
   markFinal: z.boolean().default(false),
 })
 export type PrintLogInput = z.input<typeof printLogSchema>
+
+/** Step 2 of an import: the reviewed draft. Images/materials must come from the cached preview. */
+export const importCommitSchema = z.object({
+  importer: z.string().min(1).max(40),
+  externalId: z.string().min(1).max(100),
+  title: projectFields.title,
+  description: optionalText,
+  notes: optionalText,
+  priority: projectFields.priority.default('medium'),
+  tags: tagNamesSchema.default([]),
+  profileId: z.string().max(100).nullish(),
+  images: z.array(z.url()).max(30).default([]),
+  /** Indexes of draft.materials to add to the project (and to the catalogue when missing). */
+  materials: z.array(z.number().int().min(0)).max(50).default([]),
+})
+export type ImportCommitInput = z.input<typeof importCommitSchema>

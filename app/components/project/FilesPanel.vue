@@ -114,6 +114,31 @@ function meta(f: ProjectFile) {
 
 <template>
   <div class="flex flex-col gap-2.5">
+    <!-- Print profile chosen when importing: estimate until a real file exists -->
+    <div v-if="project.imported?.profile" class="flex flex-col gap-2 rounded-2xl border border-dashed border-default p-3">
+      <div class="flex items-start gap-2">
+        <UIcon name="i-lucide-globe" class="mt-0.5 size-4 shrink-0 text-muted" />
+        <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span class="text-xs font-medium text-muted">Perfil importado de MakerWorld{{ project.files.length ? '' : ' · estimación' }}</span>
+          <span class="text-sm font-semibold leading-snug">{{ project.imported.profile.name }}</span>
+          <span class="text-xs text-muted">
+            {{ [project.imported.profile.printer, project.imported.profile.grams ? `${Math.round(project.imported.profile.grams)} g` : null, project.imported.profile.minutes ? formatMinutes(project.imported.profile.minutes) : null, project.imported.profile.cost !== null ? formatEuro(project.imported.profile.cost) : null].filter(Boolean).join(' · ') }}
+          </span>
+          <ColorSwatches v-if="project.imported.profile.filaments.length" :colors="project.imported.profile.filaments.map(f => f.colorHex)" class="mt-0.5" />
+        </div>
+      </div>
+      <UButton
+        v-if="!project.files.length"
+        :to="`${project.imported.url}#profileId-${project.imported.profile.externalId}`"
+        target="_blank"
+        icon="i-lucide-external-link"
+        label="Descargar el 3MF en MakerWorld"
+        size="sm"
+        variant="soft"
+        class="self-start"
+      />
+    </div>
+
     <div
       v-for="f in project.files"
       :key="f.id"

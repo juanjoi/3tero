@@ -170,8 +170,10 @@ export const projectSources = pgTable('project_sources', {
   externalId: text('external_id').notNull(),
   url: text().notNull(),
   raw: jsonb().notNull(),
+  /** Print profile chosen at import time (ImportedProfile): estimate until a real file is uploaded. */
+  profile: jsonb(),
   importedAt: timestamp('imported_at', { withTimezone: true }).notNull().defaultNow(),
-})
+}, t => [index('project_sources_external_idx').on(t.importer, t.externalId)])
 
 export const settings = pgTable('settings', {
   key: text().primaryKey(),

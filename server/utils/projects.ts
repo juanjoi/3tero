@@ -80,6 +80,7 @@ export async function getProjectDetail(db: Db, id: string) {
     }
   })
   const reference = filesOut.find(f => f.final) ?? filesOut[0] ?? null
+  const imported = await getImportedProfile(db, id)
 
   const printsOut = prints.map((p) => {
     const fils = printFils.filter(f => f.printLogId === p.id)
@@ -102,10 +103,53 @@ export async function getProjectDetail(db: Db, id: string) {
     history,
     prints: printsOut,
     spent: Math.round(printsOut.reduce((s, p) => s + p.cost, 0) * 100) / 100,
-    estimate: reference
+    imported,
+    // Reference file first; otherwise the print profile chosen when importing
+    estimate: reference && (reference.grams || reference.estMinutes)
       ? { fileId: reference.id, cost: reference.filaments.length ? reference.cost : null, grams: reference.grams || null, minutes: reference.estMinutes }
-      : null,
+      : imported?.profile
+        ? { fileId: null, cost: imported.profile.cost, grams: imported.profile.grams, minutes: imported.profile.minutes }
+        : null,
   }
+}
+
+/**
+ * Import metadata of a project (platform + chosen print profile with an estimated cost:
+ * catalogue price for matching type + colour, default price otherwise).
+ */
+async function getImportedProfile(db: Db, projectId: string) {
+  const [src] = await db.select({
+    importer: schema.projectSources.importer,
+    externalId: schema.projectSources.externalId,
+    url: schema.projectSources.url,
+    importedAt: schema.projectSources.importedAt,
+    profile: schema.projectSources.profile,
+  }).from(schema.projectSources).where(eq(schema.projectSources.projectId, projectId))
+  if (!src) return null
+  const profile = src.profile as ImportedProfileJson | null
+  if (!profile) return { ...src, profile: null }
+
+  const fallback = Number(useRuntimeConfig().defaultFilamentPricePerKg)
+  const catalogue = await db.select({ type: filaments.type, colorHex: filaments.colorHex, pricePerKg: filaments.pricePerKg }).from(filaments)
+  const priced = profile.filaments.map((f) => {
+    const match = catalogue.find(c => c.type.toLowerCase() === f.type.toLowerCase() && c.colorHex.toUpperCase() === f.colorHex.toUpperCase())
+    return { ...f, inCatalogue: !!match, pricePerKg: match ? Number(match.pricePerKg) : fallback }
+  })
+  const cost = priced.length ? filamentCost(priced.map(f => ({ grams: f.grams ?? 0, pricePerKg: f.pricePerKg }))) : null
+  return { ...src, profile: { ...profile, filaments: priced, cost } }
+}
+
+interface ImportedProfileJson {
+  externalId: string
+  name: string
+  printer: string | null
+  fit: 'native' | 'resliced' | 'other'
+  minutes: number | null
+  grams: number | null
+  plates: number | null
+  needAms: boolean
+  filaments: { type: string, colorHex: string, grams: number | null }[]
+  coverUrl: string | null
 }
 
 export type ProjectDetail = Awaited<ReturnType<typeof getProjectDetail>>

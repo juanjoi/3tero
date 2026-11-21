@@ -8,3 +8,6 @@ export type ProjectListItem = InternalApi['/api/projects']['get'][number]
 export type Filament = InternalApi['/api/filaments']['get'][number]
 export type Material = InternalApi['/api/materials']['get'][number]
 export type TagWithCount = { id: string, name: string, color: string | null, count: number }
+export type ImportPreview = InternalApi['/api/import/preview']['post']
+export type ImportDraft = ImportPreview['draft']
+export type ImportProfile = ImportDraft['profiles'][number]

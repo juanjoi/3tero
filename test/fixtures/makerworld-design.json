@@ -1,0 +1,895 @@
+{
+ "id": 3029073,
+ "title": "Bambu scraper handle V3",
+ "slug": "bambu-scraper-handle-v3",
+ "coverUrl": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/design/4eecadba4a669659.jpg",
+ "summary": "<h3>🛠️ Spatule Bambu Lab - V3</h3><p>Version améliorée et entièrement repensée<br>Nouvelle version optimisée suite aux retours utilisateurs pour une utilisation encore plus efficace et naturelle.</p><p>&nbsp;</p><h4><strong>🔄 Améliorations V3</strong></h4><p>✅ Design entièrement retravaillé<br>→ Nouvelle géométrie / meilleure ergonomie</p><p>✅ Angle de lame optimisé<br>→ Lame parallèle au plateau pour un décollage plus facile</p><p>&nbsp;</p><p>&nbsp;</p><p><strong>🔩 Compatibilité</strong></p><p>&nbsp;</p><p>Compatible avec la lame officielle Bambu Lab<br>Fixation via x2 vis BT2.6x8 SHCS (AA00<img src=\"https://makerworld.bblmw.com/x.jpg\"><script>alert(1)</script></p>",
+ "tags": [
+  "scraper",
+  "scrapper",
+  "bed",
+  "BAMBU",
+  "BAMBULAB",
+  "p2s",
+  "x2d",
+  "Tool",
+  "tool",
+  "BAMBU LAB",
+  "bed accessory",
+  "razor blade",
+  "razor",
+  "tool 3d",
+  "scraper 3d",
+  "tool 3d print",
+  "Blade",
+  "blade",
+  "BamBulab",
+  "Bambu",
+  "Bambulab",
+  "BambuLab",
+  "bambu scraper",
+  "scraper bambu",
+  "scraper bambulab",
+  "A1",
+  "h2d"
+ ],
+ "designCreator": {
+  "name": "MXDesign",
+  "handle": "mxdesign",
+  "avatar": "https://public-cdn.bblmw.com/avatar/1567751971/2025-12-25_92e6f0aea0af38.png"
+ },
+ "categories": [
+  {
+   "id": 901,
+   "name": "3D Printer Accessories",
+   "slug": "",
+   "picUrl": "",
+   "desc": "",
+   "descPic": "",
+   "bannerName": ""
+  },
+  {
+   "id": 900,
+   "name": "3D Printer",
+   "slug": "",
+   "picUrl": "https://public-cdn.bambulab.com/category/3Dprinters.svg",
+   "desc": "",
+   "descPic": "",
+   "bannerName": ""
+  }
+ ],
+ "license": "Standard Digital File License",
+ "createTime": "2026-07-09T00:09:07Z",
+ "defaultInstanceId": 3404179,
+ "downloadCount": 27362,
+ "likeCount": 4736,
+ "printCount": 28771,
+ "designExtension": {
+  "design_pictures": [
+   {
+    "url": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/design/8d101fdde15f050c.jpg",
+    "name": "PHOTO_2.jpg"
+   },
+   {
+    "url": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/design/e828c2e4978d2543.jpg",
+    "name": "holder.jpg"
+   },
+   {
+    "url": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/design/5ef3f5a081eec6c7.jpg",
+    "name": "PHOTO_REEL_1.jpg"
+   },
+   {
+    "url": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/design/4eecadba4a669659.jpg"
+   }
+  ],
+  "instances_order": [
+   3404179,
+   3404182,
+   3404186,
+   3404187,
+   3583430,
+   3844691,
+   3778751
+  ],
+  "boms": [
+   {
+    "sku": "B-NB008",
+    "quantity": 1,
+    "url": "https://store.bambulab.com/products/rectangular-transparent-double-sided-adhesive?id=43032590188680&modelId=3029073",
+    "displayTitle": "35x15 mm (10PCS) - NB008",
+    "displayParentTitle": "Rectangular Transparent Double-Sided Adhesive"
+   },
+   {
+    "sku": "B-CA008",
+    "quantity": 1,
+    "url": "https://store.bambulab.com/products/round-magnet?id=42424856510600&modelId=3029073",
+    "displayTitle": "D8x3 mm Round Magnet (20PCS) - CA008",
+    "displayParentTitle": "Round Magnet"
+   },
+   {
+    "sku": "B-AA004",
+    "quantity": 1,
+    "url": "https://store.bambulab.com/products/bt2-6-socket-head-cap-self-tapping-screw-shcs?id=42102866477192&modelId=3029073",
+    "displayTitle": "BT2.6x8 SHCS Self Tapping Screw (20PCS) - AA004",
+    "displayParentTitle": "BT2.6 Socket Head Cap Self Tapping Screw (SHCS)"
+   },
+   {
+    "sku": "FAC002-N",
+    "quantity": 1,
+    "url": "https://store.bambulab.com/products/bambu-scraper-3-pcs?id=40922941882504&modelId=3029073",
+    "displayTitle": "All Series",
+    "displayParentTitle": "Bambu Scraper 3 pcs"
+   }
+  ]
+ },
+ "instances": [
+  {
+   "id": 3404179,
+   "title": "Avec AMS - Deux Couleur",
+   "prediction": 4225,
+   "weight": 18,
+   "needAms": true,
+   "cover": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/864622893/instance/4eecadba4a669659.jpg",
+   "instanceFilaments": [
+    {
+     "type": "PLA",
+     "color": "#757575",
+     "usedM": "5.28",
+     "usedG": "17"
+    },
+    {
+     "type": "PLA",
+     "color": "#00AE42",
+     "usedM": "0.32",
+     "usedG": "1"
+    }
+   ],
+   "extention": {
+    "modelInfo": {
+     "compatibility": {
+      "devModelName": "N7",
+      "devProductName": "P2S",
+      "nozzleDiameter": 0.4
+     },
+     "otherCompatibility": [
+      {
+       "devProductName": "H2C"
+      },
+      {
+       "devProductName": "X1"
+      },
+      {
+       "devProductName": "X1 Carbon"
+      },
+      {
+       "devProductName": "X1E"
+      },
+      {
+       "devProductName": "H2D"
+      },
+      {
+       "devProductName": "P1P"
+      },
+      {
+       "devProductName": "X2D"
+      },
+      {
+       "devProductName": "P1S"
+      },
+      {
+       "devProductName": "A1"
+      },
+      {
+       "devProductName": "H2D Pro"
+      },
+      {
+       "devProductName": "A1 mini"
+      },
+      {
+       "devProductName": "H2S"
+      },
+      {
+       "devProductName": "A2L"
+      },
+      {
+       "devProductName": "H3C"
+      }
+     ],
+     "plates": [
+      {
+       "index": 1,
+       "name": "2_Colors",
+       "prediction": 4225,
+       "weight": 18
+      }
+     ]
+    },
+    "otherCompatibilityModelInfo": [
+     {
+      "devProductName": "X1E",
+      "prediction": 4047,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.25",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.32",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "A1 mini",
+      "prediction": 4346,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.12",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.28",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "A1",
+      "prediction": 4399,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.12",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.28",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "X1",
+      "prediction": 4056,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.25",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.32",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2S",
+      "prediction": 4076,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.13",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.30",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "X2D",
+      "prediction": 3910,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.05",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.12",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2C",
+      "prediction": 3951,
+      "weight": 17,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "4.99",
+        "usedG": "16"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.11",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2D",
+      "prediction": 3980,
+      "weight": 17,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "4.89",
+        "usedG": "16"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.11",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "P1P",
+      "prediction": 3984,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.17",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.32",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "P1S",
+      "prediction": 3982,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.17",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.32",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2D Pro",
+      "prediction": 4004,
+      "weight": 17,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "4.94",
+        "usedG": "16"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.12",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "X1 Carbon",
+      "prediction": 4044,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.25",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.32",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "A2L",
+      "prediction": 4491,
+      "weight": 18,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "5.10",
+        "usedG": "17"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.28",
+        "usedG": "1"
+       }
+      ]
+     },
+     {
+      "devProductName": "H3C",
+      "prediction": 4166,
+      "weight": 17,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#757575",
+        "usedM": "4.87",
+        "usedG": "16"
+       },
+       {
+        "type": "PLA",
+        "color": "#00AE42",
+        "usedM": "0.09",
+        "usedG": "1"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 3911900,
+   "title": "(PETG) No Logo Scraper Handle (Two Color Print By Object)",
+   "prediction": 4298,
+   "weight": 15,
+   "needAms": true,
+   "cover": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/1063211584/instance/9138d6173e56ba2f.jfif",
+   "instanceFilaments": [
+    {
+     "type": "PETG",
+     "color": "#161616",
+     "usedM": "0.53",
+     "usedG": "2"
+    },
+    {
+     "type": "PETG",
+     "color": "#057748",
+     "usedM": "4.06",
+     "usedG": "13"
+    }
+   ],
+   "extention": {
+    "modelInfo": {
+     "compatibility": {
+      "devModelName": "N1",
+      "devProductName": "A1 mini",
+      "nozzleDiameter": 0.4
+     },
+     "otherCompatibility": [
+      {
+       "devProductName": "A1"
+      },
+      {
+       "devProductName": "A2L"
+      }
+     ],
+     "plates": [
+      {
+       "index": 1,
+       "name": "",
+       "prediction": 4298,
+       "weight": 15
+      }
+     ]
+    },
+    "otherCompatibilityModelInfo": [
+     {
+      "devProductName": "A1",
+      "prediction": 4413,
+      "weight": 15,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "0.52",
+        "usedG": "2"
+       },
+       {
+        "type": "PETG",
+        "color": "#057748",
+        "usedM": "4.06",
+        "usedG": "13"
+       }
+      ]
+     },
+     {
+      "devProductName": "P2S",
+      "prediction": 4250,
+      "weight": 15,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "0.53",
+        "usedG": "2"
+       },
+       {
+        "type": "PLA",
+        "color": "#057748",
+        "usedM": "4.24",
+        "usedG": "13"
+       }
+      ]
+     },
+     {
+      "devProductName": "P1S",
+      "prediction": 4256,
+      "weight": 15,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "0.54",
+        "usedG": "2"
+       },
+       {
+        "type": "PETG",
+        "color": "#057748",
+        "usedM": "4.12",
+        "usedG": "13"
+       }
+      ]
+     },
+     {
+      "devProductName": "X2D",
+      "prediction": 4423,
+      "weight": 15,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "0.48",
+        "usedG": "2"
+       },
+       {
+        "type": "PLA",
+        "color": "#057748",
+        "usedM": "4.14",
+        "usedG": "13"
+       }
+      ]
+     },
+     {
+      "devProductName": "A2L",
+      "prediction": 4317,
+      "weight": 15,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "0.52",
+        "usedG": "2"
+       },
+       {
+        "type": "PLA",
+        "color": "#057748",
+        "usedM": "4.23",
+        "usedG": "13"
+       }
+      ]
+     },
+     {
+      "devProductName": "X1 Carbon",
+      "prediction": 4324,
+      "weight": 15,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "0.62",
+        "usedG": "2"
+       },
+       {
+        "type": "PETG",
+        "color": "#057748",
+        "usedM": "4.12",
+        "usedG": "13"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 3911936,
+   "title": "(PETG) Scraper Holder - A1 Mini - Stackable Storage Stand V3",
+   "prediction": 6936,
+   "weight": 34,
+   "needAms": false,
+   "cover": "https://makerworld.bblmw.com/makerworld/model/US793a221948f8cb/1063205099/instance/b1c07fe36b4aa26b.jfif",
+   "instanceFilaments": [
+    {
+     "type": "PETG",
+     "color": "#161616",
+     "usedM": "10.74",
+     "usedG": "34"
+    }
+   ],
+   "extention": {
+    "modelInfo": {
+     "compatibility": {
+      "devModelName": "N1",
+      "devProductName": "A1 mini",
+      "nozzleDiameter": 0.4
+     },
+     "otherCompatibility": [
+      {
+       "devProductName": "P1S"
+      },
+      {
+       "devProductName": "H2D Pro"
+      },
+      {
+       "devProductName": "H2S"
+      },
+      {
+       "devProductName": "P2S"
+      },
+      {
+       "devProductName": "X1 Carbon"
+      },
+      {
+       "devProductName": "P1P"
+      },
+      {
+       "devProductName": "H2D"
+      },
+      {
+       "devProductName": "X1E"
+      },
+      {
+       "devProductName": "A1"
+      },
+      {
+       "devProductName": "H2C"
+      },
+      {
+       "devProductName": "X2D"
+      },
+      {
+       "devProductName": "X1"
+      },
+      {
+       "devProductName": "A2L"
+      },
+      {
+       "devProductName": "H3C"
+      }
+     ],
+     "plates": [
+      {
+       "index": 1,
+       "name": "Logo",
+       "prediction": 3511,
+       "weight": 17
+      },
+      {
+       "index": 2,
+       "name": "No Logo",
+       "prediction": 3425,
+       "weight": 17
+      }
+     ]
+    },
+    "otherCompatibilityModelInfo": [
+     {
+      "devProductName": "A1",
+      "prediction": 7181,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "10.74",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "A2L",
+      "prediction": 5386,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "11.15",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2D Pro",
+      "prediction": 4852,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "11.17",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "P2S",
+      "prediction": 5054,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "11.15",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "X1E",
+      "prediction": 6885,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "11.03",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2C",
+      "prediction": 4825,
+      "weight": 36,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "11.29",
+        "usedG": "36"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2D",
+      "prediction": 4847,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "11.17",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "H2S",
+      "prediction": 4860,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "11.19",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "X2D",
+      "prediction": 4823,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PLA",
+        "color": "#161616",
+        "usedM": "11.15",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "P1P",
+      "prediction": 6731,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "10.87",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "X1",
+      "prediction": 6863,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "11.03",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "P1S",
+      "prediction": 6731,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "10.87",
+        "usedG": "34"
+       }
+      ]
+     },
+     {
+      "devProductName": "X1 Carbon",
+      "prediction": 6863,
+      "weight": 34,
+      "instanceFilaments": [
+       {
+        "type": "PETG",
+        "color": "#161616",
+        "usedM": "11.03",
+        "usedG": "34"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}
