@@ -3,6 +3,27 @@ const colorMode = useColorMode()
 const { data: storage } = await useFetch('/api/settings/storage', { key: 'storage' })
 const { data: archived } = await useFetch('/api/projects', { query: { archived: 'true' }, key: 'archived' })
 const pct = computed(() => (storage.value ? Math.min(100, (storage.value.usedBytes / storage.value.quotaBytes) * 100) : 0))
+// Backup / restore
+const toast = useToast()
+const onError = useApiError()
+const { upload, progress, uploading } = useUpload()
+const backupInput = useTemplateRef<HTMLInputElement>('backupInput')
+const backupFile = ref<File | null>(null)
+async function restore() {
+  if (!backupFile.value) return
+  try {
+    const res = await upload<{ projects: number, files: number, exportedAt: string }>('/api/backup/restore', [backupFile.value], { confirm: 'REPLACE' })
+    toast.add({
+      title: 'Copia restaurada',
+      description: `${res.projects} proyectos y ${res.files} ficheros (copia del ${new Date(res.exportedAt).toLocaleDateString('es-ES')})`,
+      icon: 'i-lucide-archive-restore',
+    })
+    backupFile.value = null
+    await refreshNuxtData()
+  }
+  catch (err) { onError(err, 'No se pudo restaurar la copia') }
+}
+
 const modes = [
   { label: 'Sistema', value: 'system', icon: 'i-lucide-monitor' },
   { label: 'Claro', value: 'light', icon: 'i-lucide-sun' },
@@ -39,6 +60,34 @@ const modes = [
           <li>Ficheros por proyecto: {{ storage.maxFilesPerProject }}</li>
           <li>Imágenes por proyecto: {{ storage.maxImagesPerProject }}</li>
         </ul>
+      </div>
+    </UCard>
+
+    <UCard>
+      <template #header><h2 class="font-semibold">Copia de seguridad</h2></template>
+      <div class="flex flex-col gap-4">
+        <p class="text-sm text-muted">
+          Un único ZIP con todos los proyectos, fotos, ficheros, impresiones y catálogo.
+          Sirve para guardarlo fuera del mini PC o para llevar Layra a otra máquina.
+        </p>
+        <UButton to="/api/backup" external download icon="i-lucide-download" label="Descargar copia" class="self-start" />
+
+        <div class="flex flex-col gap-2 border-t border-default pt-4">
+          <span class="text-sm font-medium">Restaurar una copia</span>
+          <p class="text-xs text-muted">Reemplaza <b>todos</b> los datos actuales por los de la copia.</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <UButton icon="i-lucide-file-archive" :label="backupFile ? backupFile.name : 'Elegir fichero .zip'" variant="outline" color="neutral" :disabled="uploading" @click="backupInput?.click()" />
+            <ConfirmButton
+              v-if="backupFile && !uploading"
+              icon="i-lucide-archive-restore"
+              label="Restaurar"
+              confirm-label="Se borrará todo lo actual. ¿Seguro?"
+              @confirm="restore"
+            />
+          </div>
+          <UProgress v-if="uploading" :model-value="progress" size="sm" />
+          <input ref="backupInput" type="file" accept=".zip,application/zip" class="hidden" @change="e => { backupFile = (e.target as HTMLInputElement).files?.[0] ?? null; (e.target as HTMLInputElement).value = '' }">
+        </div>
       </div>
     </UCard>
 
