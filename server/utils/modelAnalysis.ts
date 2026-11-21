@@ -15,6 +15,8 @@ export interface ModelAnalysis {
   fitsPrinter: boolean | null
   filaments: FilamentUse[]
   thumbnail: Uint8Array | null
+  /** MakerWorld model the 3MF was downloaded from: `DesignModelId` is the design's `modelId` hash (e.g. "US793a…"), not the numeric URL id. */
+  origin: { makerworldModelId: string, designer: string | null } | null
   parsed: Record<string, unknown>
 }
 
@@ -34,6 +36,7 @@ export async function analyzeModel(absPath: string, format: 'stl' | '3mf'): Prom
       fitsPrinter: stl.bbox ? fitsVolume(stl.bbox, PRINTER_VOLUME_MM) : null,
       filaments: [],
       thumbnail: null,
+      origin: null,
       parsed: { type: 'stl', ...stl },
     }
   }
@@ -61,6 +64,7 @@ export async function analyzeModel(absPath: string, format: 'stl' | '3mf'): Prom
     fitsPrinter,
     filaments: s.filaments,
     thumbnail: s.thumbnail ? readEntry(buf, s.thumbnail) ?? null : null,
+    origin: r.makerworldDesignId ? { makerworldModelId: r.makerworldDesignId.slice(0, 64), designer: r.designer ?? null } : null,
     parsed: {
       type: '3mf',
       ...r,

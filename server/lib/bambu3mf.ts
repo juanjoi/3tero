@@ -38,6 +38,8 @@ export interface Bambu3mf {
   version?: string
   title?: string
   designer?: string
+  /** `DesignModelId`: MakerWorld modelId hash (e.g. "US793a…"), not the numeric id of the URL */
+  /** `DesignModelId`: MakerWorld modelId hash (e.g. "US793a…"), not the numeric id of the URL */
   makerworldDesignId?: string
   printer: { model?: string, modelId?: string, preset?: string, nozzle?: string }
   layerHeight?: number

@@ -6,7 +6,7 @@ import { count, eq } from 'drizzle-orm'
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   const db = useDb()
-  await getProjectOr404(db, id)
+  const project = await getProjectOr404(db, id)
   await assertQuota(event)
 
   const lim = limits()
@@ -58,9 +58,13 @@ export default defineEventHandler(async (event) => {
       if (filaments.length) {
         await tx.insert(schema.fileFilaments).values(filaments.map(x => ({ fileId, ...x, grams: String(x.grams) })))
       }
-      await tx.update(schema.projects).set({ updatedAt: new Date() }).where(eq(schema.projects.id, id))
+      await tx.update(schema.projects).set({ updatedAt: new Date(), ...(analysis.origin?.designer && !project.designer ? { designer: analysis.origin.designer.slice(0, 200) } : {}) }).where(eq(schema.projects.id, id))
     })
-    setResponseHeaders(event, { 'x-new-filaments': String(created), 'x-file-id': fileId })
+    setResponseHeaders(event, {
+      'x-new-filaments': String(created),
+      'x-file-id': fileId,
+      'x-source-check': await checkOrigin(id, analysis.origin),
+    })
   }
   catch (err) {
     await removeStored(path, thumbnailPath)
@@ -71,3 +75,16 @@ export default defineEventHandler(async (event) => {
   }
   return getProjectDetail(db, id)
 })
+
+/**
+ * Compares the MakerWorld model a 3MF comes from with the imported design of the project:
+ * 'match', 'mismatch' (probably uploaded to the wrong project) or '' (nothing to compare).
+ */
+async function checkOrigin(projectId: string, origin: { makerworldModelId: string } | null) {
+  if (!origin) return ''
+  const { rows } = await usePool().query<{ modelId: string | null }>(
+    `SELECT raw->>'modelId' AS "modelId" FROM project_sources WHERE project_id = $1 AND importer = 'makerworld'`, [projectId])
+  const imported = rows[0]?.modelId
+  if (!imported) return ''
+  return imported === origin.makerworldModelId ? 'match' : 'mismatch'
+}

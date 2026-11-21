@@ -49,6 +49,11 @@ async function onFile(e: Event) {
     const created = updated.files.find(f => f.id === header('x-file-id'))
     if (!created) return
     afterUpload(created, Number(header('x-new-filaments') ?? 0))
+    const check = header('x-source-check')
+    if (check === 'match') toast.add({ title: 'Es el 3MF del modelo importado de MakerWorld', icon: 'i-lucide-badge-check' })
+    if (check === 'mismatch') {
+      toast.add({ title: 'Este 3MF es de otro modelo de MakerWorld', description: '¿Seguro que es el proyecto correcto?', icon: 'i-lucide-triangle-alert', color: 'warning' })
+    }
   }
   catch (err) {
     onError(err, 'No se pudo subir el fichero')

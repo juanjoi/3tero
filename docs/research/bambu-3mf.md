@@ -64,7 +64,7 @@ Sliced `.gcode.3mf` adds `Metadata/plate_N.gcode` (+ `.md5`), `<plate>` blocks i
 ```
 Projects may configure more filaments than they use (12 configured, 4 used).
 
-`3D/3dmodel.model` metadata: `Application=BambuStudio-…`, Title, Designer, License, and `DesignModelId` / `ProfileTitle` when downloaded from MakerWorld → **links an uploaded file back to its MakerWorld project**. Orca also writes `Application=BambuStudio-…`; detect it via `<metadata name="OrcaSlicer">` or the `OrcaSlicer-Version` header.
+`3D/3dmodel.model` metadata: `Application=BambuStudio-…`, Title, Designer, License, and `DesignModelId` / `ProfileTitle` when downloaded from MakerWorld. ⚠️ `DesignModelId` is the design's **`modelId` hash** (e.g. `USb02791906e64b3`, field `modelId` of the design API), **not** the numeric id used in URLs → it can confirm that a 3MF belongs to an imported design, but cannot build the URL on its own. [V] Orca also writes `Application=BambuStudio-…`; detect it via `<metadata name="OrcaSlicer">` or the `OrcaSlicer-Version` header.
 
 G-code header (fallback source): `; total estimated time`, `; total filament weight [g]`, `; max_z_height` (BS 2.x; BS 1.7 lacks weight and max_z).
 
