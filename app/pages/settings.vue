@@ -68,7 +68,7 @@ const modes = [
       <div class="flex flex-col gap-4">
         <p class="text-sm text-muted">
           Un único ZIP con todos los proyectos, fotos, ficheros, impresiones y catálogo.
-          Sirve para guardarlo fuera del mini PC o para llevar Layra a otra máquina.
+          Sirve para guardarlo fuera del mini PC o para llevar 3tero a otra máquina.
         </p>
         <UButton to="/api/backup" external download icon="i-lucide-download" label="Descargar copia" class="self-start" />
 

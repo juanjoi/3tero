@@ -1,8 +1,8 @@
 # Production: the app only. PostgreSQL is the existing server on the host
 # (set NUXT_DATABASE_URL in .env). Put it behind your reverse proxy.
 services:
-  layra:
-    image: layra:latest
+  trestero:
+    image: trestero:latest
     build: .
     restart: unless-stopped
     env_file: .env

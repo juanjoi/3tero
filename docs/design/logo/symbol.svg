@@ -1,0 +1,8 @@
+<!-- 3tero symbol: a "3" shaped as a shelf holding printed parts (cube, letter D, cone).
+     Source of truth for the logo. To resize the D, edit the path with class "d" (see docs/design/logo/README.md). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 4 84 90">
+  <path d="M18 30 H66 Q84 30 84 44 Q84 58 66 58 H40 M66 58 Q84 58 84 72 Q84 88 66 88 H18" fill="none" stroke="#15803D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="24" y="14.5" width="13" height="12" rx="2" fill="#22C55E"/>
+  <path class="d" d="M47 40.5 H53 A7 7 0 0 1 53 54.5 H47 Z M50.5 44 V51 H53 A3.5 3.5 0 0 0 53 44 Z" fill="#F97316" fill-rule="evenodd"/>
+  <polygon points="30,84.5 44,84.5 37,70" fill="#22C55E"/>
+</svg>

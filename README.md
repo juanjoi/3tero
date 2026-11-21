@@ -1,4 +1,8 @@
-# Layra (working name)
+# 3tero
+
+<img src="docs/design/logo/symbol.svg" alt="" width="72">
+
+*3tero* (read "trastero", a storage room): the shelf where the family keeps its 3D printing projects.
 
 Self-hosted PWA to manage the family's 3D printing projects: model iterations (STL/3MF), photos, materials, cost, priority, status, tags, print log and MakerWorld import.
 
@@ -36,7 +40,7 @@ Migrations are applied automatically when the server starts. Health: `GET /api/h
 | Type check | `npm run typecheck` |
 | Tests | `npm test` |
 | Regenerate PWA icons | edit `public/logo.svg` → `npm run pwa:assets` |
-| Production image | `docker build -t layra:latest .` |
+| Production image | `docker build -t trestero:latest .` |
 
 ## Production
 

@@ -9,7 +9,7 @@ if (error.value) throw createError({ statusCode: 404, statusMessage: 'Proyecto n
 const p = computed(() => project.value!)
 const update = (next: ProjectDetail) => (project.value = next)
 
-useHead({ title: () => `${p.value.title} · Layra` })
+useHead({ title: () => `${p.value.title} · 3tero` })
 
 // Active tab lives in the URL (?tab=prints) so other pages can link to it
 const tab = computed({

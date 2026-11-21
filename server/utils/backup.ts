@@ -1,4 +1,4 @@
-// Full backup / restore as a single ZIP: `layra-backup.json` (every table) + `media/…` (data volume files).
+// Full backup / restore as a single ZIP: `3tero-backup.json` (every table) + `media/…` (data volume files).
 // Both directions stream, so multi-GB backups never sit in memory. See docs/ops/backup.md.
 import { closeSync, createReadStream, mkdirSync, openSync, promises as fs, writeSync } from 'node:fs'
 import { dirname, relative, sep } from 'node:path'
@@ -8,7 +8,10 @@ import { once } from 'node:events'
 import { Unzip, UnzipInflate, Zip, ZipDeflate, ZipPassThrough } from 'fflate'
 
 export const BACKUP_FORMAT = 1
-const JSON_NAME = 'layra-backup.json'
+const JSON_NAME = '3tero-backup.json'
+/** Backups made before the rename (working name "Layra") are still accepted. */
+const LEGACY_JSON_NAMES = ['layra-backup.json']
+const APP_IDS = ['3tero', 'layra']
 
 /** Parent tables first (insert order); restore truncates them all at once. */
 export const BACKUP_TABLES = [
@@ -19,7 +22,7 @@ export const BACKUP_TABLES = [
 
 interface BackupJson {
   format: number
-  app: 'layra'
+  app: string
   exportedAt: string
   migrations: number
   tables: Record<string, Record<string, unknown>[]>
@@ -59,7 +62,7 @@ export function exportBackup(): PassThrough {
       const { rows } = await pool.query(`SELECT * FROM ${t}`)
       tables[t] = rows
     }
-    const json: BackupJson = { format: BACKUP_FORMAT, app: 'layra', exportedAt: new Date().toISOString(), migrations: await migrationCount(), tables }
+    const json: BackupJson = { format: BACKUP_FORMAT, app: '3tero', exportedAt: new Date().toISOString(), migrations: await migrationCount(), tables }
     const entry = new ZipDeflate(JSON_NAME, { level: 6 })
     zip.add(entry)
     entry.push(new TextEncoder().encode(JSON.stringify(json)), true)
@@ -99,7 +102,7 @@ export async function restoreBackup(zipPath: string) {
       uz.register(UnzipInflate)
       const jsonChunks: Uint8Array[] = []
       uz.onfile = (f) => {
-        if (f.name === JSON_NAME) {
+        if (f.name === JSON_NAME || LEGACY_JSON_NAMES.includes(f.name)) {
           f.ondata = (err, data, final) => {
             if (err) return reject(err)
             jsonChunks.push(data)
@@ -130,7 +133,7 @@ export async function restoreBackup(zipPath: string) {
     })
 
     const backup = json as BackupJson | null
-    if (!backup || backup.app !== 'layra' || backup.format !== BACKUP_FORMAT || typeof backup.tables !== 'object') {
+    if (!backup || !APP_IDS.includes(backup.app) || backup.format !== BACKUP_FORMAT || typeof backup.tables !== 'object') {
       throw createError({ statusCode: 422, statusMessage: 'El fichero no es una copia de seguridad válida' })
     }
     if (backup.migrations > await migrationCount()) {

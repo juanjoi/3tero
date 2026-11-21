@@ -22,7 +22,7 @@
 - Dev DB contains `[Demo]` projects, imported "Flexi skeleton" and auto-created filaments — safe to delete.
 
 ## Next steps
-1. [ ] Choose the final name (candidates in memory/PROJECT_PLAN §1 + Spanish options: Capazo, Panal, Proyectario, 3Dteca…) and rename (manifest, logo, compose, package, DB/role names, docs).
+1. [x] Name chosen: **3tero** (technical id `trestero`) + logo ([design/logo](design/logo/README.md)).
 2. [ ] Deploy on the mini PC (README → Production) and use it for real; collect feedback.
 3. [ ] Small gaps vs PROJECT_PLAN §3: tag colours, markdown rendering for description/notes, group-by in lists, filament type/colour filter, gallery reordering.
 4. [ ] Parse very large 3MF in a worker thread (today main thread, ~0.1–0.7 s on real files; only matters for >100 MB files).
@@ -44,4 +44,4 @@
 - Editing server files while a request is in flight restarts Nitro in dev and drops that request (seen with uploads).
 
 ## Blockers / open questions
-- Final name (working name: Layra).
+- None.

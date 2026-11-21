@@ -312,7 +312,7 @@ const toast = useToast()
       v-if="!visible.length && loadStatus !== 'pending'"
       icon="i-lucide-box"
       :title="route.query.q || route.query.tags || route.query.priority || route.query.source || status !== 'all' ? 'Nada coincide con los filtros' : 'Todavía no hay proyectos'"
-      description="Crea un proyecto o comparte un enlace de MakerWorld con Layra."
+      description="Crea un proyecto o comparte un enlace de MakerWorld con 3tero."
       :actions="[{ label: 'Nuevo proyecto', icon: 'i-lucide-plus', to: '/projects/new' }, { label: 'Importar desde URL', icon: 'i-lucide-link', to: '/import', variant: 'outline' }]"
       class="mt-10"
     />

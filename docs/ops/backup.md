@@ -7,7 +7,7 @@ Two complementary layers:
 **Ajustes → Copia de seguridad → Descargar copia** (`GET /api/backup`) streams one ZIP:
 
 ```
-layra-backup.json        every table (format 1, app "layra", migrations count, exportedAt)
+3tero-backup.json        every table (format 1, app "3tero", migrations count, exportedAt)
 media/projects/<id>/…    images (.webp + thumbnails), model files, print photos
 ```
 
@@ -27,7 +27,7 @@ Moving to another machine: install with Docker (README), open the app, restore t
 
 ## 2. Infrastructure backup (optional, for automation)
 
-- Database: `pg_dump -Fc layra > layra.dump` (see [database.md](database.md)).
+- Database: `pg_dump -Fc trestero > trestero.dump` (see [database.md](database.md)).
 - Files: copy the `./data` folder mounted by `docker-compose.yml` (`tar czf data.tgz -C ./data projects`).
 
 Run both at the same moment so database rows and files match.

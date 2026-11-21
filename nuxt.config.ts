@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'es' },
-      title: 'Layra',
+      title: '3tero',
       meta: [{ name: 'theme-color', content: '#15803D' }],
       link: [{ rel: 'icon', href: '/favicon.ico' }],
     },
@@ -45,8 +45,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
-      name: 'Layra',
-      short_name: 'Layra',
+      name: '3tero',
+      short_name: '3tero',
       description: 'Proyectos de impresión 3D',
       lang: 'es',
       theme_color: '#15803D',
@@ -59,7 +59,7 @@ export default defineNuxtConfig({
         { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
         { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
       ],
-      // Android: "Share" a MakerWorld link from Chrome / the MakerWorld app straight into Layra
+      // Android: "Share" a MakerWorld link from Chrome / the MakerWorld app straight into 3tero
       share_target: {
         action: '/import',
         method: 'GET',

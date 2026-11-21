@@ -8,7 +8,7 @@ const toast = useToast()
 const onError = useApiError()
 const printer = useRuntimeConfig().public.printerModel
 
-useHead({ title: 'Importar · Layra' })
+useHead({ title: 'Importar · 3tero' })
 
 // Android may put the link in `url` or inside `text`
 const shared = [route.query.url, route.query.text, route.query.title]
@@ -137,7 +137,7 @@ const priorityItems = PRIORITIES.map(p => ({ label: PRIORITY_META[p].label, valu
       <UButton type="submit" label="Cargar" size="xl" :loading="loading" :disabled="!link.trim()" />
     </form>
     <p v-if="!draft && !failure && !loading" class="-mt-2 text-sm text-muted">
-      También puedes compartir un modelo desde la app de MakerWorld o desde Chrome y elegir Layra.
+      También puedes compartir un modelo desde la app de MakerWorld o desde Chrome y elegir 3tero.
     </p>
 
     <!-- Loading skeleton -->

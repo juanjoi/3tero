@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Family statistics. Charts are plain HTML/CSS bars: single series in the primary hue,
 // identity of filaments carried by their own colour swatch next to the label.
-useHead({ title: 'Estadísticas · Layra' })
+useHead({ title: 'Estadísticas · 3tero' })
 const { data: s } = await useFetch('/api/stats')
 
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']

@@ -15,7 +15,7 @@ const mobileNav = nav.filter(i => !i.desktopOnly)
   <div class="min-h-dvh bg-(--ui-bg) text-default md:flex">
     <!-- Side navigation (tablet / desktop) -->
     <aside class="hidden md:flex w-56 shrink-0 flex-col gap-1 border-r border-default bg-default p-4">
-      <AppLogo class="mb-6 px-2" />
+      <AppLogo tagline class="mb-6 px-2" />
       <UButton
         v-for="item in nav"
         :key="item.to"

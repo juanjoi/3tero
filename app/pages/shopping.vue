@@ -2,7 +2,7 @@
 // Shopping list: hardware and missing filament for projects still to print.
 // Ticked items are stored server side so the whole family sees the same list.
 const onError = useApiError()
-useHead({ title: 'Compras · Layra' })
+useHead({ title: 'Compras · 3tero' })
 
 const onlyHigh = ref(false)
 const query = computed(() => (onlyHigh.value ? { priority: 'high' } : {}))

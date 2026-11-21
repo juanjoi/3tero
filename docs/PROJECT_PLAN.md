@@ -1,6 +1,6 @@
 # Project Plan — 3D Printing Project Repository
 
-> Working name: **Layra** (provisional — see [Naming](#1-naming))
+> Name: **3tero** (read "trastero") — decided 2026-11-21, see [Naming](#1-naming)
 > Status: draft v0.3 — 2026-11-20
 > Related: [STATUS](STATUS.md) · [Decisions](adr/) · [Design](design/README.md) · [Research](research/)
 
@@ -36,18 +36,11 @@ Guiding principle: **keep it simple**. Single codebase (Nuxt), single container,
 
 ## 1. Naming
 
-Criteria: short, modern, memorable, easy to say in Spanish and English, works as a PWA icon and a Docker image name.
+**Decision (2026-11-21): 3tero** — read "trastero" (a storage room): *the* place where the family keeps its 3D projects; the "3" brings the 3D.
 
-| Name | Idea |
-|---|---|
-| **Layra** ⭐ (working name) | From *layer*; soft and brandable, 5 letters. Logo: three stacked lines. |
-| **Infill** | The inside structure of every print; technical and clean. |
-| **Forja** | "Forge" — where things get made; strong Spanish word. |
-| **Vértice** | "Vertex" — the basic unit of every 3D mesh. |
-| **Kubo** | A cube with a twist; playful but minimal. |
-| **Extrud** | From *extrude*; sounds like a tech product. |
-
-Before settling: check availability of the domain/GitHub name and that it doesn't clash with an existing 3D product. Renaming before phase 1 is cheap (PWA name, image name, DB name).
+- Display name: **3tero** (PWA name, titles, logo). Technical identifiers that cannot start with a digit use **trestero** (npm package, Docker image/service, PostgreSQL role & database).
+- Logo: the "3" is a shelf holding printed parts (cube, letter **D**, cone) → the symbol reads "3D". Sources and how to change it: [design/logo/README.md](design/logo/README.md).
+- Discarded candidates: Layra (working name until phase 5), Infill, Forja, Vértice, Kubo, Extrud, Nozl, Stratum, Bobbin, Voxa, Capazo, Panal, Capateca, Desván 3D, Trastero 3D, Arcón, Colmena, Proyectario, 3Dteca, Proyecta3D, Almacén 3D, Trastienda 3D, Proyectoteca, 3Dspensa, 3Dsván, 3Dpósito.
 
 ---
 
@@ -330,8 +323,8 @@ services:
 
 One-time setup on the existing server (documented in `docs/ops/database.md`):
 ```sql
-CREATE ROLE layra LOGIN PASSWORD '***';
-CREATE DATABASE layra OWNER layra;
+CREATE ROLE trestero LOGIN PASSWORD '***';
+CREATE DATABASE trestero OWNER trestero;
 -- pg_trgm and unaccent are "trusted" extensions (PG 13+):
 -- the database owner can create them, no superuser needed.
 ```
@@ -429,7 +422,7 @@ GET    /api/health
 
 ## 10. Open questions
 
-1. **Name**: final choice (Layra is a working name).
+1. ~~**Name**~~ → **3tero** (§1).
 2. **Mockups feedback**: approve / adjust the screens in [design/README.md](design/README.md).
 3. ~~PostgreSQL version~~ → latest (19); dev uses `postgres:19-alpine`.
 

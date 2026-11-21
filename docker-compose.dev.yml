@@ -4,17 +4,17 @@ services:
     image: postgres:19-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: layra
-      POSTGRES_PASSWORD: layra
-      POSTGRES_DB: layra
+      POSTGRES_USER: trestero
+      POSTGRES_PASSWORD: trestero
+      POSTGRES_DB: trestero
     ports:
       - "5432:5432"
     volumes:
-      - layra-pg:/var/lib/postgresql
+      - trestero-pg:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U layra -d layra"]
+      test: ["CMD-SHELL", "pg_isready -U trestero -d trestero"]
       interval: 5s
       retries: 10
 
 volumes:
-  layra-pg:
+  trestero-pg:
