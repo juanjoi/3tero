@@ -64,6 +64,19 @@ async function undoArchive() {
   catch (err) { onError(err) }
 }
 
+const duplicating = ref(false)
+async function duplicate() {
+  duplicating.value = true
+  try {
+    const copy = await $fetch(`/api/projects/${id}/duplicate`, { method: 'POST' })
+    toast.add({ title: 'Proyecto duplicado', icon: 'i-lucide-copy' })
+    manageOpen.value = false
+    await navigateTo(`/projects/${copy.id}`)
+  }
+  catch (err) { onError(err, 'No se pudo duplicar') }
+  finally { duplicating.value = false }
+}
+
 async function restore() {
   try {
     update(await $fetch(`/api/projects/${id}/restore`, { method: 'POST' }))
@@ -156,6 +169,7 @@ async function hardDelete() {
             </div>
             <div class="flex flex-wrap gap-1.5">
               <UButton :to="`/projects/${id}/edit`" icon="i-lucide-pencil" label="Editar" size="sm" variant="outline" color="neutral" />
+              <UButton icon="i-lucide-copy" label="Duplicar" size="sm" variant="outline" color="neutral" :loading="duplicating" @click="duplicate" />
               <UButton v-if="p.archivedAt" icon="i-lucide-archive-restore" label="Restaurar" size="sm" variant="outline" color="neutral" @click="restore" />
               <UButton v-else icon="i-lucide-archive" label="Archivar" size="sm" variant="outline" color="neutral" @click="archive" />
               <ConfirmButton label="Borrar" size="sm" confirm-label="Se borra todo. ¿Seguro?" class="ml-auto" @confirm="hardDelete" />
