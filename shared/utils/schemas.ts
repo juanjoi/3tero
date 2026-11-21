@@ -118,3 +118,17 @@ export const importCommitSchema = z.object({
   materials: z.array(z.number().int().min(0)).max(50).default([]),
 })
 export type ImportCommitInput = z.input<typeof importCommitSchema>
+
+/** Saved home filters ("smart collections"): a name plus the URL query of the project list. */
+export const savedFilterSchema = z.object({
+  id: z.string().min(1).max(40),
+  name: z.string().trim().min(1).max(40),
+  query: z.object({
+    q: z.string().max(200).optional(),
+    status: z.enum(PROJECT_STATUSES).optional(),
+    tags: z.string().max(500).optional(),
+    sort: z.enum(PROJECT_SORTS).optional(),
+  }),
+})
+export const savedFiltersSchema = z.array(savedFilterSchema).max(30)
+export type SavedFilter = z.infer<typeof savedFilterSchema>

@@ -51,6 +51,47 @@ const sortItems = [
   { label: 'Coste', value: 'cost' },
 ]
 const tagItems = computed(() => (allTags.value ?? []).filter(t => t.count > 0).map(t => t.name))
+function toggleTag(name: string) {
+  selectedTags.value = selectedTags.value.includes(name) ? selectedTags.value.filter(t => t !== name) : [...selectedTags.value, name]
+}
+
+// Saved filters ("smart collections"), shared by the family
+const onError = useApiError()
+const { data: savedFilters } = await useFetch('/api/settings/saved-filters', { key: 'saved-filters', default: () => [] as SavedFilter[] })
+const currentQuery = computed<SavedFilter['query']>(() => {
+  const out: Record<string, string> = {}
+  for (const k of ['q', 'status', 'tags', 'sort'] as const) if (route.query[k]) out[k] = String(route.query[k])
+  return out as SavedFilter['query']
+})
+const sameQuery = (a: SavedFilter['query'], b: SavedFilter['query']) =>
+  (['q', 'status', 'tags', 'sort'] as const).every(k => (a[k] ?? '') === (b[k] ?? ''))
+const activeSaved = computed(() => savedFilters.value.find(f => sameQuery(f.query, currentQuery.value)) ?? null)
+const hasFilters = computed(() => Object.keys(currentQuery.value).length > 0)
+
+function applySaved(f: SavedFilter) {
+  if (activeSaved.value?.id === f.id) {
+    q.value = ''
+    router.replace({ query: {} })
+    return
+  }
+  q.value = f.query.q ?? ''
+  router.replace({ query: { ...f.query } })
+}
+const naming = ref(false)
+const newName = ref('')
+async function persist(next: SavedFilter[]) {
+  try {
+    savedFilters.value = await $fetch('/api/settings/saved-filters', { method: 'PUT', body: next })
+  }
+  catch (err) { onError(err, 'No se pudo guardar el filtro') }
+}
+async function saveCurrent() {
+  if (!newName.value.trim()) return
+  await persist([...savedFilters.value, { id: Date.now().toString(36), name: newName.value.trim(), query: currentQuery.value }])
+  naming.value = false
+  newName.value = ''
+}
+const removeSaved = (f: SavedFilter) => persist(savedFilters.value.filter(x => x.id !== f.id))
 </script>
 
 <template>
@@ -62,15 +103,6 @@ const tagItems = computed(() => (allTags.value ?? []).filter(t => t.count > 0).m
     <div class="flex flex-col gap-3 md:flex-row md:items-center">
       <UInput v-model="q" icon="i-lucide-search" size="xl" placeholder="Buscar proyectos, etiquetas…" class="w-full" :loading="loadStatus === 'pending'" />
       <div class="flex gap-2">
-        <USelectMenu
-          v-model="selectedTags"
-          :items="tagItems"
-          multiple
-          icon="i-lucide-tag"
-          placeholder="Etiquetas"
-          size="xl"
-          class="min-w-36 flex-1 md:w-48"
-        />
         <USelect v-model="sort" :items="sortItems" icon="i-lucide-arrow-down-wide-narrow" size="xl" class="w-40" />
       </div>
     </div>
@@ -86,6 +118,44 @@ const tagItems = computed(() => (allTags.value ?? []).filter(t => t.count > 0).m
       >
         {{ c.label }} <span class="opacity-60">{{ counts[c.id] ?? 0 }}</span>
       </UButton>
+    </div>
+
+    <!-- Tags as inline toggle chips (no popups) -->
+    <div v-if="tagItems.length" class="-mx-4 flex gap-1.5 overflow-x-auto px-4">
+      <UButton
+        v-for="t in tagItems"
+        :key="t"
+        :label="`#${t}`"
+        size="xs"
+        :variant="selectedTags.includes(t) ? 'soft' : 'ghost'"
+        :color="selectedTags.includes(t) ? 'primary' : 'neutral'"
+        class="shrink-0 rounded-full"
+        @click="toggleTag(t)"
+      />
+    </div>
+
+    <!-- Saved filters -->
+    <div v-if="savedFilters.length || hasFilters" class="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4">
+      <template v-for="f in savedFilters" :key="f.id">
+        <UButton
+          :label="f.name"
+          icon="i-lucide-bookmark"
+          size="sm"
+          :variant="activeSaved?.id === f.id ? 'solid' : 'soft'"
+          :color="activeSaved?.id === f.id ? 'primary' : 'neutral'"
+          class="shrink-0 rounded-full"
+          @click="applySaved(f)"
+        />
+        <ConfirmButton v-if="activeSaved?.id === f.id" size="xs" icon="i-lucide-x" confirm-label="¿Quitar?" class="shrink-0" @confirm="removeSaved(f)" />
+      </template>
+      <template v-if="hasFilters && !activeSaved">
+        <form v-if="naming" class="flex shrink-0 items-center gap-1" @submit.prevent="saveCurrent">
+          <UInput v-model="newName" size="sm" placeholder="Nombre del filtro" autofocus class="w-40" />
+          <UButton type="submit" size="sm" icon="i-lucide-check" aria-label="Guardar" :disabled="!newName.trim()" />
+          <UButton size="sm" icon="i-lucide-x" variant="ghost" color="neutral" aria-label="Cancelar" @click="naming = false" />
+        </form>
+        <UButton v-else label="Guardar filtro" icon="i-lucide-bookmark-plus" size="sm" variant="ghost" color="neutral" class="shrink-0" @click="naming = true" />
+      </template>
     </div>
 
     <TransitionGroup v-if="visible.length" name="card" tag="div" class="relative grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
