@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
 
   const where: string[] = [query.archived ? 'p.archived_at IS NOT NULL' : 'p.archived_at IS NULL']
   if (query.status?.length) where.push(`p.status::text = ANY(${p(query.status)})`)
+  if (query.source) where.push(`p.source::text = ${p(query.source)}`)
   if (query.priority?.length) where.push(`p.priority::text = ANY(${p(query.priority)})`)
   if (query.tags?.length) {
     const lowered = [...new Set(query.tags.map(t => t.toLowerCase()))]

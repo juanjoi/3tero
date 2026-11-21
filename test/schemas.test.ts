@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { projectCreateSchema, projectListQuerySchema } from '../shared/utils/schemas'
+import { projectBulkSchema, projectCreateSchema, projectListQuerySchema } from '../shared/utils/schemas'
 
 describe('projectCreateSchema', () => {
   it('applies defaults and accepts missing optional fields', () => {
@@ -41,5 +41,17 @@ describe('partial updates', () => {
     const { projectUpdateSchema } = await import('../shared/utils/schemas')
     const out = projectUpdateSchema.parse({ priority: 'high' })
     expect(out).toEqual({ priority: 'high' })
+  })
+})
+
+describe('projectBulkSchema', () => {
+  const ids = ['3f1c2a4e-5b6d-4e7f-8a9b-0c1d2e3f4a5b']
+  it('accepts exactly one action', () => {
+    expect(projectBulkSchema.parse({ ids, priority: 'high' }).priority).toBe('high')
+    expect(projectBulkSchema.parse({ ids, archive: false }).archive).toBe(false)
+  })
+  it('rejects zero or several actions', () => {
+    expect(() => projectBulkSchema.parse({ ids })).toThrow()
+    expect(() => projectBulkSchema.parse({ ids, priority: 'high', status: 'printed' })).toThrow()
   })
 })

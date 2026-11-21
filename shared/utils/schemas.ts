@@ -47,6 +47,7 @@ export const projectListQuerySchema = z.object({
   status: csv(z.enum(PROJECT_STATUSES)),
   priority: csv(z.enum(PRIORITIES)),
   tags: csv(z.string().trim().min(1)),
+  source: z.enum(['manual', 'makerworld']).optional(),
   sort: z.enum(PROJECT_SORTS).default('priority'),
   archived: z.preprocess(v => v === 'true' || v === true, z.boolean()).default(false),
 })
@@ -128,7 +129,18 @@ export const savedFilterSchema = z.object({
     status: z.enum(PROJECT_STATUSES).optional(),
     tags: z.string().max(500).optional(),
     sort: z.enum(PROJECT_SORTS).optional(),
+    priority: z.enum(PRIORITIES).optional(),
+    source: z.enum(['manual', 'makerworld']).optional(),
   }),
 })
 export const savedFiltersSchema = z.array(savedFilterSchema).max(30)
 export type SavedFilter = z.infer<typeof savedFilterSchema>
+
+/** Bulk actions from the project list (one action per request). */
+export const projectBulkSchema = z.object({
+  ids: z.array(z.uuid()).min(1).max(500),
+  status: z.enum(PROJECT_STATUSES).optional(),
+  priority: z.enum(PRIORITIES).optional(),
+  addTags: tagNamesSchema.optional(),
+  archive: z.boolean().optional(),
+}).refine(b => [b.status, b.priority, b.addTags, b.archive].filter(v => v !== undefined).length === 1, 'Una acción por petición')
