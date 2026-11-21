@@ -6,7 +6,7 @@ withDefaults(defineProps<{ tagline?: boolean }>(), { tagline: false })
 <template>
   <div class="flex flex-col" role="img" aria-label="3tero">
     <div class="flex items-end font-display text-2xl font-bold leading-none tracking-tight" aria-hidden="true">
-      <svg viewBox="10 4 84 90" class="mr-px h-[1.4rem] w-auto shrink-0" style="margin-bottom: -1px">
+      <svg viewBox="10 4 84 90" class="mr-0.5 h-[1.85rem] w-auto shrink-0" style="margin-bottom: -1px">
         <path
           d="M18 30 H66 Q84 30 84 44 Q84 58 66 58 H40 M66 58 Q84 58 84 72 Q84 88 66 88 H18"
           fill="none"
