@@ -2,6 +2,7 @@
 const nav = [
   { label: 'Proyectos', icon: 'i-lucide-box', to: '/' },
   { label: 'Tablero', icon: 'i-lucide-kanban', to: '/board' },
+  { label: 'Compras', icon: 'i-lucide-shopping-cart', to: '/shopping' },
   { label: 'Materiales', icon: 'i-lucide-disc-3', to: '/materials' },
   { label: 'Ajustes', icon: 'i-lucide-sliders-horizontal', to: '/settings' },
 ]
@@ -31,7 +32,7 @@ const nav = [
     </main>
 
     <!-- Bottom navigation (phone) -->
-    <nav class="md:hidden fixed inset-x-0 bottom-0 grid grid-cols-4 border-t border-default bg-default/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+    <nav class="md:hidden fixed inset-x-0 bottom-0 grid grid-cols-5 border-t border-default bg-default/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
       <NuxtLink
         v-for="item in nav"
         :key="item.to"
