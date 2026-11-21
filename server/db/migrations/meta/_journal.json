@@ -22,6 +22,13 @@
       "when": 1795248056960,
       "tag": "0002_import_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795248522508,
+      "tag": "0003_filament_stock",
+      "breakpoints": true
     }
   ]
 }

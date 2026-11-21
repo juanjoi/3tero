@@ -24,6 +24,15 @@ async function removeMaterial(m: Material) {
   }
   catch (err) { onError(err) }
 }
+async function addSpool(f: Filament) {
+  try {
+    await $fetch(`/api/filaments/${f.id}`, { method: 'PATCH', body: { stockGrams: Number(f.stockGrams ?? 0) + 1000 } })
+    await refreshFilaments()
+  }
+  catch (err) { onError(err) }
+}
+const LOW_STOCK_G = 150
+
 async function filamentSaved() {
   editingFilament.value = null
   await refreshFilaments()
@@ -54,7 +63,18 @@ async function materialSaved() {
             <div class="flex min-w-0 flex-1 flex-col">
               <span class="truncate text-sm font-semibold">{{ f.type }} · {{ f.colorName }}</span>
               <span class="text-xs text-muted">{{ f.brand ?? 'Sin marca' }} · {{ formatEuro(f.pricePerKg) }}/kg</span>
+              <div v-if="f.stockGrams !== null" class="mt-1 flex items-center gap-2">
+                <div class="h-1.5 w-20 overflow-hidden rounded-full bg-elevated">
+                  <div
+                    class="h-full rounded-full transition-all"
+                    :class="Number(f.stockGrams) < LOW_STOCK_G ? 'bg-warning' : 'bg-primary'"
+                    :style="{ width: `${Math.min(100, Number(f.stockGrams) / 10)}%` }"
+                  />
+                </div>
+                <span class="text-xs" :class="Number(f.stockGrams) < LOW_STOCK_G ? 'font-semibold text-warning' : 'text-toned'">{{ Math.round(Number(f.stockGrams)) }} g</span>
+              </div>
             </div>
+            <UButton icon="i-lucide-package-plus" variant="ghost" color="neutral" aria-label="Añadir una bobina de 1 kg" title="+1 bobina (1 kg)" @click="addSpool(f)" />
             <UButton icon="i-lucide-pencil" variant="ghost" color="neutral" aria-label="Editar" @click="editingFilament = f.id" />
             <ConfirmButton confirm-label="¿Borrar?" @confirm="removeFilament(f)" />
           </div>

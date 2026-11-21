@@ -86,6 +86,8 @@ export const filaments = pgTable('filaments', {
   colorHex: text('color_hex').notNull(),
   pricePerKg: numeric('price_per_kg', { precision: 8, scale: 2 }).notNull(),
   bambuPresetId: text('bambu_preset_id'), // e.g. GFA00, matches 3MF tray_info_idx
+  /** Grams left in stock (all spools of this filament). NULL = stock not tracked. Prints deduct from it. */
+  stockGrams: numeric('stock_grams', { precision: 10, scale: 2 }),
   ...timestamps,
 })
 

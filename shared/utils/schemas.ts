@@ -58,6 +58,8 @@ export const filamentSchema = z.object({
   colorHex: hexColor,
   pricePerKg: z.coerce.number().min(0).max(10_000),
   bambuPresetId: optionalText,
+  /** Grams in stock; null stops tracking. */
+  stockGrams: z.number().min(0).max(1_000_000).nullable().optional(),
 })
 
 export const materialSchema = z.object({

@@ -180,6 +180,15 @@ async function hardDelete() {
           </div>
         </div>
 
+        <UAlert
+          v-if="p.stockShort.length && p.status !== 'printed'"
+          icon="i-lucide-package-x"
+          color="warning"
+          variant="soft"
+          title="No queda filamento suficiente"
+          :description="p.stockShort.map(s => `${s.type} ${s.colorName}: necesitas ${s.need} g, quedan ${s.have} g`).join(' · ')"
+        />
+
         <div class="flex gap-2">
           <UButton icon="i-lucide-printer" label="Registrar impresión" size="lg" class="flex-1 justify-center" :to="`/projects/${id}/print`" />
           <UButton :to="`/projects/${id}/edit`" icon="i-lucide-pencil" size="lg" variant="outline" color="neutral" aria-label="Editar" />

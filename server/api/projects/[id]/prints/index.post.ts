@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
       await tx.insert(schema.printLogFilaments).values(prices.map(p => ({
         printLogId: log!.id, filamentId: p.id, grams: String(grams.get(p.id)), pricePerKg: p.price,
       })))
+      await adjustStock(tx, [...grams].map(([filamentId, g]) => ({ filamentId, grams: -g })))
     }
     const patch: Partial<typeof schema.projects.$inferInsert> = { updatedAt: new Date() }
     if (body.markFinal && body.fileId) patch.finalFileId = body.fileId

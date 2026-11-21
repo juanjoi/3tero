@@ -24,6 +24,16 @@ export async function setProjectTags(tx: Tx, projectId: string, names: string[])
   await tx.insert(projectTags).values(rows.map(r => ({ projectId, tagId: r.id }))).onConflictDoNothing()
 }
 
+/** Adds (or with negative grams, deducts) filament stock; untracked filaments (NULL stock) are left alone. */
+export async function adjustStock(tx: Tx, changes: { filamentId: string, grams: number }[]) {
+  for (const c of changes) {
+    if (!c.grams) continue
+    await tx.update(filaments)
+      .set({ stockGrams: sql`GREATEST(${filaments.stockGrams} + ${c.grams}, 0)` })
+      .where(and(eq(filaments.id, c.filamentId), sql`${filaments.stockGrams} IS NOT NULL`))
+  }
+}
+
 export async function recordStatus(tx: Tx, projectId: string, from: ProjectStatus | null, to: ProjectStatus) {
   await tx.insert(statusHistory).values({ projectId, fromStatus: from, toStatus: to })
 }
@@ -81,6 +91,7 @@ export async function getProjectDetail(db: Db, id: string) {
   })
   const reference = filesOut.find(f => f.final) ?? filesOut[0] ?? null
   const imported = await getImportedProfile(db, id)
+  const stockShort = await getStockShortages(db, reference?.filaments ?? [])
 
   const printsOut = prints.map((p) => {
     const fils = printFils.filter(f => f.printLogId === p.id)
@@ -104,6 +115,8 @@ export async function getProjectDetail(db: Db, id: string) {
     prints: printsOut,
     spent: Math.round(printsOut.reduce((s, p) => s + p.cost, 0) * 100) / 100,
     imported,
+    /** Tracked filaments without enough stock for the reference file. */
+    stockShort,
     // Reference file first; otherwise the print profile chosen when importing
     estimate: reference && (reference.grams || reference.estMinutes)
       ? { fileId: reference.id, cost: reference.filaments.length ? reference.cost : null, grams: reference.grams || null, minutes: reference.estMinutes }
@@ -111,6 +124,16 @@ export async function getProjectDetail(db: Db, id: string) {
         ? { fileId: null, cost: imported.profile.cost, grams: imported.profile.grams, minutes: imported.profile.minutes }
         : null,
   }
+}
+
+async function getStockShortages(db: Db, needs: { filamentId: string, grams: string | number }[]) {
+  if (!needs.length) return []
+  const need = new Map<string, number>()
+  for (const n of needs) need.set(n.filamentId, (need.get(n.filamentId) ?? 0) + Number(n.grams))
+  const rows = await db.select().from(filaments).where(inArray(filaments.id, [...need.keys()]))
+  return rows
+    .filter(r => r.stockGrams !== null && Number(r.stockGrams) < need.get(r.id)!)
+    .map(r => ({ filamentId: r.id, type: r.type, colorName: r.colorName, colorHex: r.colorHex, need: Math.round(need.get(r.id)!), have: Math.round(Number(r.stockGrams)) }))
 }
 
 /**

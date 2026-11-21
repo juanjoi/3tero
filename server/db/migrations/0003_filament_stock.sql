@@ -1,0 +1,1 @@
+ALTER TABLE "filaments" ADD COLUMN "stock_grams" numeric(10, 2);

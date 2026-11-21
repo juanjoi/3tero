@@ -12,13 +12,14 @@ const state = reactive({
   colorHex: props.filament?.colorHex ?? '#1F2937',
   pricePerKg: props.filament ? Number(props.filament.pricePerKg) : 20,
   bambuPresetId: props.filament?.bambuPresetId ?? '',
+  stockGrams: props.filament?.stockGrams == null ? null : Number(props.filament.stockGrams) as number | null,
 })
 const saving = ref(false)
 
 async function save() {
   saving.value = true
   try {
-    const body = { ...state, colorHex: state.colorHex.toUpperCase() }
+    const body = { ...state, colorHex: state.colorHex.toUpperCase(), stockGrams: state.stockGrams ?? null }
     if (props.filament) await $fetch(`/api/filaments/${props.filament.id}`, { method: 'PATCH', body })
     else await $fetch('/api/filaments', { method: 'POST', body })
     emit('saved')
@@ -51,6 +52,13 @@ async function save() {
     </UFormField>
     <UFormField label="Preset Bambu" name="bambuPresetId" help="Opcional, p. ej. GFA00">
       <UInput v-model="state.bambuPresetId" class="w-full" />
+    </UFormField>
+    <UFormField label="En stock (g)" name="stockGrams" help="Vacío = sin control de stock. Cada impresión lo descuenta." class="col-span-2">
+      <div class="flex items-center gap-2">
+        <UInputNumber v-model="state.stockGrams" :min="0" :step="50" placeholder="Sin control" class="w-40" />
+        <UButton label="+1 bobina (1 kg)" size="sm" variant="soft" icon="i-lucide-plus" @click="state.stockGrams = (state.stockGrams ?? 0) + 1000" />
+        <UButton v-if="state.stockGrams !== null" label="No controlar" size="sm" variant="ghost" color="neutral" @click="state.stockGrams = null" />
+      </div>
     </UFormField>
     <div class="col-span-2 flex justify-end gap-2">
       <UButton label="Cancelar" variant="ghost" color="neutral" @click="emit('cancel')" />
