@@ -28,7 +28,7 @@ function remember(result: ImportResult) {
 async function withDuplicates(draft: ImportedProjectDraft) {
   const existing = await useDb().select({ id: schema.projectSources.projectId }).from(schema.projectSources)
     .where(and(eq(schema.projectSources.importer, draft.importer), eq(schema.projectSources.externalId, draft.externalId)))
-  return { draft, existingProjectIds: existing.map(e => e.id) }
+  return { draft, existingProjectIds: existing.map(e => e.id), canTranslate: !!useRuntimeConfig().translateUrl }
 }
 
 async function importerFor(text: string) {

@@ -42,7 +42,33 @@ function loadPasted() {
   if (pasted.value.trim()) request({ url: failure.value?.url || link.value, payload: pasted.value.trim() })
 }
 
+// Translation of the reviewed texts with the self-hosted LibreTranslate (ADR 0008); the original can be restored
+const original = ref<{ title: string, description: string, tags: string[] } | null>(null)
+const translating = ref(false)
+async function translate() {
+  translating.value = true
+  try {
+    const res = await $fetch('/api/translate', { method: 'POST', body: { title: form.title, description: form.description, tags: form.tags } })
+    original.value = { title: form.title, description: form.description, tags: [...form.tags] }
+    form.title = res.title || form.title
+    form.description = res.description
+    form.tags = [...new Set(res.tags.map(t => t.trim().toLowerCase().slice(0, 40)).filter(Boolean))]
+  }
+  catch (err) {
+    onError(err, 'No se pudo traducir')
+  }
+  finally {
+    translating.value = false
+  }
+}
+function restoreOriginal() {
+  if (!original.value) return
+  Object.assign(form, { ...original.value, tags: [...original.value.tags] })
+  original.value = null
+}
+
 async function request(body: { url: string, payload?: string } | { draft: string }) {
+  original.value = null
   loading.value = true
   failure.value = null
   preview.value = null
@@ -237,6 +263,18 @@ const priorityItems = PRIORITIES.map(p => ({ label: PRIORITY_META[p].label, valu
         </section>
 
         <section class="flex flex-col gap-4">
+          <div v-if="preview?.canTranslate" class="flex flex-wrap items-center gap-2">
+            <UButton
+              v-if="!original"
+              label="Traducir al español"
+              icon="i-lucide-languages"
+              variant="soft"
+              :loading="translating"
+              @click="translate"
+            />
+            <UButton v-else label="Ver original" icon="i-lucide-undo-2" variant="outline" color="neutral" @click="restoreOriginal" />
+            <span class="text-xs text-muted">{{ original ? 'Traducción automática: revísala antes de guardar' : translating ? 'Traduciendo… puede tardar hasta un minuto' : 'Título, descripción y etiquetas' }}</span>
+          </div>
           <UFormField label="Título" required>
             <UInput v-model="form.title" size="xl" class="w-full" />
           </UFormField>

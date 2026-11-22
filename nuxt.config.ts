@@ -28,6 +28,8 @@ export default defineNuxtConfig({
     migrationsDir: './server/db/migrations',
     /** Price used for filaments auto-created from a 3MF (editable later in the catalogue) */
     defaultFilamentPricePerKg: 20,
+    /** Self-hosted LibreTranslate URL to translate imported texts to Spanish (ADR 0008). Empty: no translate button */
+    translateUrl: '',
     limits: {
       maxModelMb: 250,
       warnModelMb: 50,
