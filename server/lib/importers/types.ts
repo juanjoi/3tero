@@ -76,6 +76,14 @@ export class ImportBlockedError extends Error {
   }
 }
 
+/** The platform is temporarily unavailable (rate limit, outage, API errors): retrying later may work. */
+export class ImportUnavailableError extends Error {
+  constructor(message = 'unavailable') {
+    super(message)
+    this.name = 'ImportUnavailableError'
+  }
+}
+
 /** The page/model does not exist or could not be understood. */
 export class ImportNotFoundError extends Error {
   constructor(message = 'not found') {

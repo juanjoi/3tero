@@ -140,10 +140,10 @@ cost = Σ over filaments (grams × price_per_kg / 1000)    [€]
      └───────────┴───────────┘  (moving back is allowed)
 ```
 - Each change stored in a **status history** (date, from, to).
-- Kanban board with drag & drop between columns.
+- Status is changed from the project detail (stepper) or with bulk actions. A kanban board was built and later dropped (2026-11-22): not useful for a family catalogue.
 
 ### 3.7 Lists, search and filters
-- Views: **card grid** (cover image), **compact list**, **kanban by status**.
+- Views: **card grid** (cover image), **compact list**.
 - Full-text search over title, description, notes, tags, designer.
 - Filters: tags (AND/OR), status, priority, source, filament type/colour.
 - Sort: priority, updated, created, cost, title.
@@ -182,7 +182,7 @@ interface ProjectImporter {
 | 1 | Project CRUD, gallery (incl. camera upload), tags, materials catalogue | MVP ✅ |
 | 2 | Model file iterations + in-browser 3D viewer (STL/3MF) | MVP ✅ |
 | 3 | Print log + real cost | MVP ✅ |
-| 4 | Status workflow + kanban | MVP ✅ |
+| 4 | Status workflow (kanban dropped 2026-11-22) | MVP ✅ |
 | 5 | Search, filters, sort, grouping | MVP ✅ |
 | 6 | MakerWorld import + Android share target | MVP ✅ |
 | 7 | Auto-extract grams/time/filaments/plates/thumbnails from Bambu 3MF ([research](research/bambu-3mf.md)) | **MVP** ✅ |
@@ -222,7 +222,7 @@ interface ProjectImporter {
 3. Tabs / sections: **Files** (iterations, 3D preview, final flag) · **Prints** (timeline log) · **Materials** · **Notes** · **Info** (source, designer, license)
 
 **Home**
-- Search bar on top, filter chips below, view switcher (grid / list / kanban).
+- Search bar on top, filter chips below, view switcher (grid / list).
 - Floating "+" button with options: new project, import from URL.
 
 ### 5.3 Motion catalogue
@@ -230,7 +230,6 @@ interface ProjectImporter {
 |---|---|
 | Card → detail navigation | Shared-element transition of the cover image (View Transitions API) |
 | List filtering / sorting | Layout animation: cards reflow smoothly, enter/exit with fade + scale |
-| Kanban drag & drop | Lift with shadow, columns highlight on hover |
 | Status change | Stepper fills progressively; subtle confetti on `printed` 🎉 |
 | Loading | Skeleton placeholders instead of spinners |
 | Buttons, chips, toggles | Micro-interactions (press scale, hover lift) |
@@ -273,7 +272,7 @@ interface ProjectImporter {
 ```
 ┌──────────────────────── Nuxt 4 app (single container) ───────────────────────┐
 │  Frontend (Vue 3, Nuxt UI, motion-v, PWA)   Server (Nitro /server/api)        │
-│  - pages: home (grid/list/kanban),          - REST endpoints                   │
+│  - pages: home (grid/list),                 - REST endpoints                   │
 │    detail, forms, import, catalogue         - importers (makerworld, …)        │
 │  - three.js STL/3MF viewer                  - 3MF parser (v1.x)                │
 │  - service worker (@vite-pwa/nuxt)          - image processing (sharp)         │
@@ -398,7 +397,7 @@ GET    /api/health
 | **0. Spike & design** ✅ | MakerWorld import feasibility; Bambu 3MF metadata; UI mockups | Done 2026-11-20 — pending mockup approval and final name |
 | **1. Foundations** | Nuxt project, design tokens/theme, Dockerfile + compose, DB schema & migrations, file storage, PWA shell | Container runs behind the proxy; app installable on Android |
 | **2. Core** | Project CRUD, gallery, tags, materials catalogue, file iterations + viewer, cost | Manage a project end to end manually |
-| **3. Prints & status** | 3MF parsing + fit check, print log, real cost, status workflow + history, kanban | Full iteration cycle: upload → print → log → final |
+| **3. Prints & status** | 3MF parsing + fit check, print log, real cost, status workflow + history | Full iteration cycle: upload → print → log → final |
 | **4. Discovery** | Grid/list, search, filters, sorting, grouping, bulk actions, motion polish | Find any project in < 3 taps |
 | **5. Import** | MakerWorld importer + Android share target | Share link from phone → saved project |
 | **6. v1.x** | Backup/export, inventory, shopping list, saved filters | |

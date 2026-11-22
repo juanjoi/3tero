@@ -35,15 +35,6 @@ const modes = [
   <div class="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-5">
     <h1 class="font-display text-2xl font-bold">Ajustes</h1>
 
-    <NuxtLink to="/stats" class="flex items-center gap-3 rounded-2xl border border-default p-4 transition-colors hover:bg-elevated/50 md:hidden">
-      <UIcon name="i-lucide-chart-column" class="size-6 text-primary" />
-      <span class="flex flex-1 flex-col">
-        <span class="font-semibold">Estadísticas</span>
-        <span class="text-sm text-muted">Gasto, filamento usado e impresiones</span>
-      </span>
-      <UIcon name="i-lucide-chevron-right" class="size-4 text-muted" />
-    </NuxtLink>
-
     <UCard>
       <template #header><h2 class="font-semibold">Apariencia</h2></template>
       <URadioGroup v-model="colorMode.preference" :items="modes" orientation="horizontal" variant="table" />

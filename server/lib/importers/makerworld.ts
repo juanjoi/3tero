@@ -1,7 +1,7 @@
 // MakerWorld importer. Verified behaviour and field map: docs/research/makerworld.md.
 // User-triggered only, one design request per import, never bypasses anti-bot protections (ADR 0005).
 import type { FetchOptions, ImportedMaterial, ImportedProfile, ImportedProjectDraft, ImportResult, ProjectImporter } from './types'
-import { ImportBlockedError, ImportNotFoundError } from './types'
+import { ImportBlockedError, ImportNotFoundError, ImportUnavailableError } from './types'
 import { decodeEntities, htmlToText, normalizeHex, samePrinter, toNumber, uniqBy } from './text'
 
 const BASE = 'https://makerworld.com'
@@ -158,11 +158,16 @@ export function extractOpenGraph(html: string, designId: string): ImportedProjec
   }
 }
 
+/** Anti-bot challenge (Cloudflare): never bypassed. */
 export function looksBlocked(status: number, headers: Headers, body: string) {
   if (headers.get('cf-mitigated')) return true
-  if (status === 429 || status === 503) return true
   if (status === 403 && /cf_chl_opt|Just a moment|challenge-platform/i.test(body)) return true
   return /cf_chl_opt|<title>Just a moment/i.test(body)
+}
+
+/** Rate limit or outage: temporary, worth retrying later. */
+export function looksUnavailable(status: number) {
+  return status === 429 || status === 502 || status === 503 || status === 504
 }
 
 const HEADERS = {
@@ -174,7 +179,8 @@ async function get(url: string, accept: string, opts: FetchOptions) {
   const doFetch = opts.fetch ?? globalThis.fetch
   const res = await doFetch(url, { headers: { ...HEADERS, Accept: accept }, redirect: 'follow', signal: AbortSignal.timeout(opts.timeoutMs ?? 10_000) })
   const body = await res.text()
-  if (looksBlocked(res.status, res.headers, body)) throw new ImportBlockedError(`MakerWorld blocked the request (${res.status})`)
+  if (looksBlocked(res.status, res.headers, body)) throw new ImportBlockedError(`MakerWorld challenged ${url} (HTTP ${res.status})`)
+  if (looksUnavailable(res.status)) throw new ImportUnavailableError(`MakerWorld unavailable for ${url} (HTTP ${res.status})`)
   return { status: res.status, body }
 }
 
@@ -183,7 +189,8 @@ async function fetchMakerWorld(url: URL, opts: FetchOptions): Promise<ImportResu
   if (!parsed) throw new ImportNotFoundError('Not a MakerWorld model URL')
   const { designId, instanceId } = parsed
 
-  // 1. Design API (richest: all profiles)
+  // 1. Design API (richest: all profiles). Usually not behind the challenge, unlike the HTML page.
+  let apiProblem: string
   try {
     const api = await get(`${BASE}/api/v1/design-service/design/${designId}`, 'application/json', opts)
     if (api.status === 200) {
@@ -191,14 +198,23 @@ async function fetchMakerWorld(url: URL, opts: FetchOptions): Promise<ImportResu
       return { draft: mapDesign(raw, { printer: opts.printer, instanceId, via: 'api' }), raw }
     }
     if (api.status === 404) throw new ImportNotFoundError('Model not found')
+    apiProblem = `HTTP ${api.status}`
   }
   catch (err) {
-    if (err instanceof ImportBlockedError || err instanceof ImportNotFoundError) throw err
-    // network/JSON errors → try the HTML page
+    if (err instanceof ImportBlockedError || err instanceof ImportNotFoundError || err instanceof ImportUnavailableError) throw err
+    apiProblem = `${(err as Error).name}: ${(err as Error).message}` // network/timeout/JSON errors → try the HTML page
   }
 
   // 2. Model page: __NEXT_DATA__, then Open Graph
-  const page = await get(`${BASE}/en/models/${designId}`, 'text/html', opts)
+  let page: Awaited<ReturnType<typeof get>>
+  try {
+    page = await get(`${BASE}/en/models/${designId}`, 'text/html', opts)
+  }
+  catch (err) {
+    // The page is normally challenged for servers: the real cause is the API failure, don't hide it
+    if (err instanceof ImportBlockedError) throw new ImportUnavailableError(`MakerWorld API failed (${apiProblem}) and the model page is challenged`)
+    throw err
+  }
   if (page.status === 404) throw new ImportNotFoundError('Model not found')
   if (page.status !== 200) throw new ImportNotFoundError(`Unexpected status ${page.status}`)
   const design = extractNextDataDesign(page.body)

@@ -156,7 +156,7 @@ const priorityItems = PRIORITIES.map(p => ({ label: PRIORITY_META[p].label, valu
       :color="failure.code === 'unsupported' ? 'neutral' : 'warning'"
       variant="soft"
       :title="failure.message"
-      :description="failure.code === 'blocked' ? 'No se intenta saltar la protección de la web. Puedes crear el proyecto a mano con el enlace.' : undefined"
+      :description="failure.code === 'blocked' ? 'No se intenta saltar la protección de la web. Puedes crear el proyecto a mano con el enlace.' : failure.code === 'unavailable' ? 'Puede ser algo pasajero. Si sigue pasando, crea el proyecto a mano con el enlace.' : undefined"
       :actions="[{ label: 'Crear a mano', icon: 'i-lucide-pencil', to: { path: '/projects/new', query: failure.url ? { sourceUrl: failure.url } : {} } }]"
     />
 

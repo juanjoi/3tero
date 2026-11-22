@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { extractNextDataDesign, extractOpenGraph, guessCategory, looksBlocked, makerWorldImporter, mapDesign, parseMakerWorldUrl } from '../server/lib/importers/makerworld'
-import { extractUrl, findImporter, ImportBlockedError } from '../server/lib/importers'
+import { extractNextDataDesign, extractOpenGraph, guessCategory, looksBlocked, looksUnavailable, makerWorldImporter, mapDesign, parseMakerWorldUrl } from '../server/lib/importers/makerworld'
+import { extractUrl, findImporter, ImportBlockedError, ImportUnavailableError } from '../server/lib/importers'
 import { htmlToText } from '../server/lib/importers/text'
 
 const design = JSON.parse(readFileSync(new URL('./fixtures/makerworld-design.json', import.meta.url), 'utf8'))
@@ -114,6 +114,12 @@ describe('html fallbacks', () => {
     expect(looksBlocked(403, new Headers(), '<title>Just a moment...</title>')).toBe(true)
     expect(looksBlocked(200, new Headers({ 'cf-mitigated': 'challenge' }), '')).toBe(true)
     expect(looksBlocked(200, new Headers(), '{"id":1}')).toBe(false)
+    expect(looksBlocked(429, new Headers(), 'Too many requests')).toBe(false)
+  })
+  it('detects temporary unavailability', () => {
+    expect(looksUnavailable(429)).toBe(true)
+    expect(looksUnavailable(503)).toBe(true)
+    expect(looksUnavailable(500)).toBe(false)
   })
 })
 
@@ -147,6 +153,28 @@ describe('fetch with fallbacks (mocked network)', () => {
       printer: 'A1 mini',
       fetch: (async () => respond(403, '<title>Just a moment...</title>')) as unknown as typeof fetch,
     })).rejects.toBeInstanceOf(ImportBlockedError)
+  })
+
+  it('reports rate limits as temporary', async () => {
+    await expect(makerWorldImporter.fetch(url, {
+      printer: 'A1 mini',
+      fetch: (async () => respond(429, 'slow down')) as unknown as typeof fetch,
+    })).rejects.toBeInstanceOf(ImportUnavailableError)
+  })
+
+  it('reports the API failure instead of the page challenge', async () => {
+    const challenge = () => respond(403, '<title>Just a moment...</title>', { 'cf-mitigated': 'challenge' })
+    await expect(makerWorldImporter.fetch(url, {
+      printer: 'A1 mini',
+      fetch: (async (u: string) => (u.includes('/api/') ? respond(500, 'oops') : challenge())) as typeof fetch,
+    })).rejects.toThrow(/API failed \(HTTP 500\)/)
+    await expect(makerWorldImporter.fetch(url, {
+      printer: 'A1 mini',
+      fetch: (async (u: string) => {
+        if (u.includes('/api/')) throw new DOMException('The operation was aborted due to timeout', 'TimeoutError')
+        return challenge()
+      }) as typeof fetch,
+    })).rejects.toThrow(/API failed \(TimeoutError/)
   })
 })
 

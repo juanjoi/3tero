@@ -1,14 +1,11 @@
 <script setup lang="ts">
 const nav = [
   { label: 'Proyectos', icon: 'i-lucide-box', to: '/' },
-  { label: 'Tablero', icon: 'i-lucide-kanban', to: '/board' },
   { label: 'Compras', icon: 'i-lucide-shopping-cart', to: '/shopping' },
   { label: 'Materiales', icon: 'i-lucide-disc-3', to: '/materials' },
-  { label: 'Estadísticas', icon: 'i-lucide-chart-column', to: '/stats', desktopOnly: true },
+  { label: 'Estadísticas', icon: 'i-lucide-chart-column', to: '/stats' },
   { label: 'Ajustes', icon: 'i-lucide-sliders-horizontal', to: '/settings' },
 ]
-// Phone bottom bar keeps 5 entries; statistics are reachable from Ajustes there
-const mobileNav = nav.filter(i => !i.desktopOnly)
 </script>
 
 <template>
@@ -37,7 +34,7 @@ const mobileNav = nav.filter(i => !i.desktopOnly)
     <!-- Bottom navigation (phone) -->
     <nav class="md:hidden fixed inset-x-0 bottom-0 grid grid-cols-5 border-t border-default bg-default/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
       <NuxtLink
-        v-for="item in mobileNav"
+        v-for="item in nav"
         :key="item.to"
         :to="item.to"
         class="flex h-16 flex-col items-center justify-center gap-1 text-xs text-muted"

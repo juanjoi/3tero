@@ -3,20 +3,21 @@
 > Update this file at the end of every work session.
 
 **Current phase:** MVP + v1.x complete → next: naming decision, real-world use, "Later" items
-**Last update:** 2026-11-21
+**Last update:** 2026-11-22
 
 ## Done
 - **Phase 0**: plan, ADRs, mockups, research (MakerWorld, Bambu 3MF + parser prototype).
 - **Phase 1**: Nuxt 4 + Nuxt UI scaffold, theme (light/dark), PWA + share target, Drizzle schema + auto migrations, Docker.
-- **Phase 2**: storage (streamed uploads, limits, quota, WebP), projects/images/files/materials/tags API, home, detail, catalogue, settings, kanban.
+- **Phase 2**: storage (streamed uploads, limits, quota, WebP), projects/images/files/materials/tags API, home, detail, catalogue, settings, kanban (removed 2026-11-22).
 - **Phase 3**: Bambu 3MF + STL parsers (unit-tested, 13 real files), auto-filled file data, thumbnails, A1 mini fit check, 3D viewer, print log with price snapshot.
-- **UI without popups** ([ADR 0006](adr/0006-inline-ui-no-popups.md)): inline catalogue forms, expandable file rows (actions, inline 3D viewer with fullscreen, editor), print log page `/projects/:id/print`, inline project options, `ConfirmButton`, board arrows.
+- **UI without popups** ([ADR 0006](adr/0006-inline-ui-no-popups.md)): inline catalogue forms, expandable file rows (actions, inline 3D viewer with fullscreen, editor), print log page `/projects/:id/print`, inline project options, `ConfirmButton`.
 - **Phase 5 — import**: `server/lib/importers` (`ProjectImporter` registry, MakerWorld: design API → `__NEXT_DATA__` → Open Graph, anti-bot detection without bypass), preview + commit endpoints (cached draft, duplicate detection, images copied from allow-listed CDN, BOM → materials, raw JSON + chosen profile in `project_sources`), `/import` page (Android share target, photo selection, profile picker with A1 mini preselected). Imported profile is the project estimate until a 3MF is uploaded; uploaded 3MF is checked against the imported design.
 - **v1.x**:
   - Filament stock (`filaments.stock_grams`, deducted by prints, restored when a print is deleted, "not enough filament" warning).
   - Shopping list `/shopping` (BOM materials + filament shortfalls of pending projects; ticks shared via `settings`).
   - Saved filters, tag chips, priority / MakerWorld filters, grid / list view, bulk actions (`/api/bulk/projects`), duplicate project.
   - Statistics `/stats`.
+  - Kanban board `/board` removed (2026-11-22): no use for us; status changes from the detail stepper and bulk actions. Statistics now in the phone bottom bar.
   - Backup / restore ZIP ([ops/backup.md](ops/backup.md)), verified round-trip and invalid-file rejection.
 - **Release pipeline**: GitHub Actions checks every push/PR (typecheck, tests, build) and publishes `ghcr.io/juanjoi/3tero:X.Y.Z` on `vX.Y.Z` tags.
 - Tests: 56 unit tests (cost, schemas, 3MF/STL parsers, MakerWorld importer on a real trimmed fixture).
@@ -42,6 +43,7 @@
 
 - API routes under `/api/projects/<word>` collide with `/api/projects/:id` in Nitro typed fetch (types become `{}`): bulk lives at `/api/bulk/projects`.
 - MakerWorld `DesignModelId` inside a 3MF is the design `modelId` hash, not the URL id (see research/bambu-3mf.md).
+- MakerWorld: the design **API** answers servers normally, but the model **HTML page** is behind a Cloudflare challenge. An import error therefore comes from the API step; the cause is logged as `[import] makerworld failed …` and shown as "no responde ahora" (`unavailable`) instead of "bloqueado".
 - Editing server files while a request is in flight restarts Nitro in dev and drops that request (seen with uploads).
 
 ## Blockers / open questions

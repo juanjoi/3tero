@@ -2,7 +2,7 @@
 import { promises as fs } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
-import { extractUrl, findImporter, ImportBlockedError, ImportNotFoundError, MAKERWORLD_IMAGE_HOSTS, resolveShareLink } from '../lib/importers'
+import { extractUrl, findImporter, ImportBlockedError, ImportNotFoundError, ImportUnavailableError, MAKERWORLD_IMAGE_HOSTS, resolveShareLink } from '../lib/importers'
 import type { ImportResult } from '../lib/importers'
 
 const TTL_MS = 30 * 60 * 1000
@@ -33,8 +33,12 @@ export async function previewImport(text: string) {
     result = await importer.fetch(url, { printer: useRuntimeConfig().public.printerModel })
   }
   catch (err) {
+    console.warn(`[import] ${importer.id} failed`, url.href, `${(err as Error).name}: ${(err as Error).message}`)
     if (err instanceof ImportBlockedError) {
       throw createError({ statusCode: 502, statusMessage: `${importer.label} ha bloqueado la petición. Rellena el proyecto a mano.`, data: { code: 'blocked', url: url.href } })
+    }
+    if (err instanceof ImportUnavailableError) {
+      throw createError({ statusCode: 503, statusMessage: `${importer.label} no responde ahora. Inténtalo más tarde.`, data: { code: 'unavailable', url: url.href } })
     }
     if (err instanceof ImportNotFoundError) {
       throw createError({ statusCode: 404, statusMessage: 'No se ha encontrado el modelo', data: { code: 'not-found', url: url.href } })

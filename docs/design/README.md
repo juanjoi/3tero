@@ -9,7 +9,7 @@ Interactive canvas (private link, owner only): https://claude.ai/artifact/L6knFc
 | Project detail | Phone | Hero gallery, priority + tags, status stepper, KPIs (cost/grams/time), primary action "Log print", tabs Files / Prints / Materials / Notes (interactive) |
 | Log print | Phone (bottom sheet) | File used, result, grams per filament pre-filled from 3MF, photo, real time, "mark as printed + final" |
 | Import | Phone | Shared URL, step progress, images, title, **profile picker with A1 mini preselected**, tags, attribution |
-| Board | Tablet landscape 1194×834 | Side nav with tags + storage usage, 3 kanban columns, drag state |
+| Board | Tablet landscape 1194×834 | Kanban — **dropped** (2026-11-22), mockup kept for reference only |
 
 Source of the mockups (HTML) is kept in `docs/design/mockups/`.
 
