@@ -15,7 +15,7 @@ Status: **MVP + v1.x complete** · see [docs/STATUS.md](docs/STATUS.md).
 - Print log with real grams, time, photos and cost (price snapshot); total spent per project.
 - Filament & materials catalogue with stock tracking ("not enough filament" warning).
 - MakerWorld import: paste or share a link from Android → title, photos, tags, designer, license, print profile (A1 mini preselected), bill of materials.
-- Home: search, status / tag / priority / source filters, saved filters, grid or list, bulk actions; kanban board.
+- Home: search, status / tag / priority / source filters, saved filters, grid or list, bulk actions.
 - Shopping list, statistics, full backup / restore (ZIP).
 
 ## Quick start (development)
