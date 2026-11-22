@@ -192,7 +192,7 @@ async function fetchMakerWorld(url: URL, opts: FetchOptions): Promise<ImportResu
   // 1. Design API (richest: all profiles). Usually not behind the challenge, unlike the HTML page.
   let apiProblem: string
   try {
-    const api = await get(`${BASE}/api/v1/design-service/design/${designId}`, 'application/json', opts)
+    const api = await get(apiUrl(designId), 'application/json', opts)
     if (api.status === 200) {
       const raw = JSON.parse(api.body)
       return { draft: mapDesign(raw, { printer: opts.printer, instanceId, via: 'api' }), raw }
@@ -229,9 +229,25 @@ async function fetchMakerWorld(url: URL, opts: FetchOptions): Promise<ImportResu
   throw new ImportNotFoundError('Could not read the model page')
 }
 
+const apiUrl = (designId: string) => `${BASE}/api/v1/design-service/design/${designId}`
+
+/** Design JSON read by the user's browser (bookmarklet or pasted): the API object or a whole __NEXT_DATA__. */
+function fromBrowserPayload(raw: unknown, url: URL, opts: { printer: string }): ImportResult {
+  const parsed = parseMakerWorldUrl(url.href)
+  if (!parsed) throw new ImportNotFoundError('Not a MakerWorld model URL')
+  const design = (raw as any)?.props?.pageProps?.design ?? raw
+  if (String((design as any)?.id) !== parsed.designId) throw new ImportNotFoundError('The data belongs to another model')
+  return { draft: mapDesign(design, { printer: opts.printer, instanceId: parsed.instanceId, via: 'browser' }), raw: design }
+}
+
 export const makerWorldImporter: ProjectImporter = {
   id: 'makerworld',
   label: 'MakerWorld',
   matches: url => /(^|\.)makerworld\.com$/i.test(url.hostname) && !!parseMakerWorldUrl(url.href),
   fetch: fetchMakerWorld,
+  fromPayload: fromBrowserPayload,
+  rawDataUrl: (url) => {
+    const parsed = parseMakerWorldUrl(url.href)
+    return parsed ? apiUrl(parsed.designId) : null
+  },
 }

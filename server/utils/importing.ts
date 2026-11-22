@@ -3,10 +3,12 @@ import { promises as fs } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
 import { extractUrl, findImporter, ImportBlockedError, ImportNotFoundError, ImportUnavailableError, MAKERWORLD_IMAGE_HOSTS, resolveShareLink } from '../lib/importers'
-import type { ImportResult } from '../lib/importers'
+import type { ImportedProjectDraft, ImportResult } from '../lib/importers'
 
 const TTL_MS = 30 * 60 * 1000
 const MAX_ENTRIES = 30
+/** Raw design JSON sent by the user's browser (MakerWorld designs are ~0.5 MB). */
+export const MAX_IMPORT_PAYLOAD_CHARS = 5_000_000
 const cache = new Map<string, ImportResult & { at: number }>()
 
 const cacheKey = (importer: string, externalId: string) => `${importer}:${externalId}`
@@ -18,8 +20,18 @@ export function getCachedImport(importer: string, externalId: string) {
   return hit
 }
 
-/** Fetches (or reuses) the draft for a pasted/shared text containing a link. */
-export async function previewImport(text: string) {
+function remember(result: ImportResult) {
+  if (cache.size >= MAX_ENTRIES) cache.delete(cache.keys().next().value!)
+  cache.set(cacheKey(result.draft.importer, result.draft.externalId), { ...result, at: Date.now() })
+}
+
+async function withDuplicates(draft: ImportedProjectDraft) {
+  const existing = await useDb().select({ id: schema.projectSources.projectId }).from(schema.projectSources)
+    .where(and(eq(schema.projectSources.importer, draft.importer), eq(schema.projectSources.externalId, draft.externalId)))
+  return { draft, existingProjectIds: existing.map(e => e.id) }
+}
+
+async function importerFor(text: string) {
   const parsed = extractUrl(text)
   if (!parsed) throw createError({ statusCode: 422, statusMessage: 'No se ha encontrado ningún enlace', data: { code: 'no-url' } })
   const url = await resolveShareLink(parsed)
@@ -27,6 +39,20 @@ export async function previewImport(text: string) {
   if (!importer) {
     throw createError({ statusCode: 422, statusMessage: 'Esta web todavía no se puede importar', data: { code: 'unsupported', url: url.href } })
   }
+  return { url, importer }
+}
+
+/** Address to copy the raw data by hand, sent with errors so the UI can offer "pegar datos" (ADR 0007). */
+export function rawDataUrlFor(text: string) {
+  const url = extractUrl(text)
+  if (!url) return null
+  return findImporter(url)?.rawDataUrl?.(url) ?? null
+}
+
+/** Fetches (or reuses) the draft for a pasted/shared text containing a link. */
+export async function previewImport(text: string) {
+  const { url, importer } = await importerFor(text)
+  const data = { url: url.href, rawDataUrl: importer.rawDataUrl?.(url) ?? null }
 
   let result: ImportResult
   try {
@@ -35,24 +61,52 @@ export async function previewImport(text: string) {
   catch (err) {
     console.warn(`[import] ${importer.id} failed`, url.href, `${(err as Error).name}: ${(err as Error).message}`)
     if (err instanceof ImportBlockedError) {
-      throw createError({ statusCode: 502, statusMessage: `${importer.label} ha bloqueado la petición. Rellena el proyecto a mano.`, data: { code: 'blocked', url: url.href } })
+      throw createError({ statusCode: 502, statusMessage: `${importer.label} no deja que el servidor lea el modelo`, data: { code: 'blocked', ...data } })
     }
     if (err instanceof ImportUnavailableError) {
-      throw createError({ statusCode: 503, statusMessage: `${importer.label} no responde ahora. Inténtalo más tarde.`, data: { code: 'unavailable', url: url.href } })
+      throw createError({ statusCode: 503, statusMessage: `${importer.label} no responde ahora. Inténtalo más tarde.`, data: { code: 'unavailable', ...data } })
     }
     if (err instanceof ImportNotFoundError) {
-      throw createError({ statusCode: 404, statusMessage: 'No se ha encontrado el modelo', data: { code: 'not-found', url: url.href } })
+      throw createError({ statusCode: 404, statusMessage: 'No se ha encontrado el modelo', data: { code: 'not-found', ...data } })
     }
-    throw createError({ statusCode: 502, statusMessage: `No se pudo contactar con ${importer.label}`, data: { code: 'network', url: url.href } })
+    throw createError({ statusCode: 502, statusMessage: `No se pudo contactar con ${importer.label}`, data: { code: 'network', ...data } })
   }
 
-  const { draft } = result
-  if (cache.size >= MAX_ENTRIES) cache.delete(cache.keys().next().value!)
-  cache.set(cacheKey(draft.importer, draft.externalId), { ...result, at: Date.now() })
+  remember(result)
+  return withDuplicates(result.draft)
+}
 
-  const existing = await useDb().select({ id: schema.projectSources.projectId }).from(schema.projectSources)
-    .where(and(eq(schema.projectSources.importer, draft.importer), eq(schema.projectSources.externalId, draft.externalId)))
-  return { draft, existingProjectIds: existing.map(e => e.id) }
+/**
+ * Draft from data the user's browser read on the platform (bookmarklet or pasted), for when the
+ * platform challenges our server. The browser passed the check as a person; we bypass nothing (ADR 0007).
+ */
+export async function previewFromPayload(text: string, payload: string) {
+  const { url, importer } = await importerFor(text)
+  const data = { code: 'bad-payload', url: url.href, rawDataUrl: importer.rawDataUrl?.(url) ?? null }
+  if (!importer.fromPayload) {
+    throw createError({ statusCode: 422, statusMessage: `${importer.label} no se puede importar desde el navegador`, data })
+  }
+  if (payload.length > MAX_IMPORT_PAYLOAD_CHARS) {
+    throw createError({ statusCode: 413, statusMessage: 'Los datos son demasiado grandes', data })
+  }
+  let result: ImportResult
+  try {
+    result = importer.fromPayload(JSON.parse(payload), url, { printer: useRuntimeConfig().public.printerModel })
+  }
+  catch (err) {
+    console.warn(`[import] ${importer.id} browser data rejected`, url.href, `${(err as Error).name}: ${(err as Error).message}`)
+    throw createError({ statusCode: 422, statusMessage: `Los datos no son de este modelo de ${importer.label}. Cópialos otra vez, enteros.`, data })
+  }
+  remember(result)
+  return withDuplicates(result.draft)
+}
+
+/** Draft already cached (the bookmarklet route stores it and redirects to the review page). */
+export async function previewCached(key: string) {
+  const [importer = '', externalId = ''] = key.split(':', 2)
+  const hit = getCachedImport(importer, externalId)
+  if (!hit) throw createError({ statusCode: 410, statusMessage: 'La vista previa ha caducado, vuelve a importar el modelo', data: { code: 'expired' } })
+  return withDuplicates(hit.draft)
 }
 
 const IMAGE_HOSTS = new Set(MAKERWORLD_IMAGE_HOSTS)

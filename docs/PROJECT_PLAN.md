@@ -160,6 +160,8 @@ cost = Σ over filaments (grams × price_per_kg / 1000)    [€]
 
 Verified details, endpoints and fallbacks: [research/makerworld.md](research/makerworld.md) · decision: [ADR 0005](adr/0005-makerworld-import-strategy.md).
 
+When MakerWorld challenges the server (it does in production), the user's browser reads the data instead — **bookmarklet** "3tero" or **paste data** — and the server builds the same draft: [ADR 0007](adr/0007-import-from-the-user-browser.md).
+
 Importer contract (one module per platform):
 ```ts
 interface ProjectImporter {

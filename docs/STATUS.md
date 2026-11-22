@@ -17,6 +17,7 @@
   - Shopping list `/shopping` (BOM materials + filament shortfalls of pending projects; ticks shared via `settings`).
   - Saved filters, tag chips, priority / MakerWorld filters, grid / list view, bulk actions (`/api/bulk/projects`), duplicate project.
   - Statistics `/stats`.
+  - **Import from the user's browser** ([ADR 0007](adr/0007-import-from-the-user-browser.md)): MakerWorld challenges the production server even on the API, so the bookmarklet "3tero" (Ajustes) or "pegar datos" send the design JSON read by the browser; `/import/browser` caches the draft and redirects to the review. Import errors are logged with their cause (`[import] makerworld failed …`) and 429/5xx are reported as temporary.
   - Kanban board `/board` removed (2026-11-22): no use for us; status changes from the detail stepper and bulk actions. Statistics now in the phone bottom bar.
   - Backup / restore ZIP ([ops/backup.md](ops/backup.md)), verified round-trip and invalid-file rejection.
 - **Release pipeline**: GitHub Actions checks every push/PR (typecheck, tests, build) and publishes `ghcr.io/juanjoi/3tero:X.Y.Z` on `vX.Y.Z` tags.
@@ -25,7 +26,7 @@
 
 ## Next steps
 1. [x] Name chosen: **3tero** (technical id `trestero`) + logo ([design/logo](design/logo/README.md)).
-2. [ ] Deploy on the mini PC (README → Production) and use it for real; collect feedback.
+2. [x] Deployed on the mini PC (v1.1.0). [ ] Try the bookmarklet from desktop and Android Chrome on a real MakerWorld page; collect feedback.
 3. [ ] Small gaps vs PROJECT_PLAN §3: tag colours, markdown rendering for description/notes, group-by in lists, filament type/colour filter, gallery reordering.
 4. [ ] Parse very large 3MF in a worker thread (today main thread, ~0.1–0.7 s on real files; only matters for >100 MB files).
 5. [ ] "Later": other importers (Printables, Thingiverse…) behind `ProjectImporter`; authentication if ever exposed without VPN (ADR 0003).
@@ -43,7 +44,7 @@
 
 - API routes under `/api/projects/<word>` collide with `/api/projects/:id` in Nitro typed fetch (types become `{}`): bulk lives at `/api/bulk/projects`.
 - MakerWorld `DesignModelId` inside a 3MF is the design `modelId` hash, not the URL id (see research/bambu-3mf.md).
-- MakerWorld: the design **API** answers servers normally, but the model **HTML page** is behind a Cloudflare challenge. An import error therefore comes from the API step; the cause is logged as `[import] makerworld failed …` and shown as "no responde ahora" (`unavailable`) instead of "bloqueado".
+- MakerWorld: the model **HTML page** is always challenged for servers; the design **API** depends on the network — fine from a home Mac, **challenged from the mini PC**. Never bypass it: the browser import (ADR 0007) is the way. The bookmarklet is untested inside a real MakerWorld tab until someone uses it (page CSP `form-action` could block it; pasting still works).
 - Editing server files while a request is in flight restarts Nitro in dev and drops that request (seen with uploads).
 
 ## Blockers / open questions

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // Import from a link: paste it or share it from Android (PWA share target → /import?url=…&text=…).
 // Step 1 previews the page once (server side), step 2 saves the reviewed draft.
+// When the platform challenges our server, the data comes from the user's browser (ADR 0007):
+// the bookmarklet route redirects here with ?draft=… (or ?error=…), or the user pastes it.
 import type { FetchError } from 'ofetch'
 
 const route = useRoute()
@@ -14,10 +16,13 @@ useHead({ title: 'Importar · 3tero' })
 const shared = [route.query.url, route.query.text, route.query.title]
   .map(v => String(v ?? '').match(/https?:\/\/\S+/)?.[0])
   .find(Boolean) ?? ''
-const link = ref(shared)
+const link = ref(shared || String(route.query.link ?? ''))
+const q = (k: string) => (typeof route.query[k] === 'string' ? route.query[k] as string : '')
 
+type Failure = { code: string, message: string, url?: string, rawDataUrl?: string | null }
 const loading = ref(false)
-const failure = ref<{ code: string, message: string, url?: string } | null>(null)
+const failure = ref<Failure | null>(q('error') ? { code: 'browser', message: q('error'), url: q('link'), rawDataUrl: q('raw') || null } : null)
+const pasted = ref('')
 const preview = ref<ImportPreview | null>(null)
 
 const form = reactive({
@@ -30,13 +35,21 @@ const form = reactive({
   materials: [] as number[],
 })
 
-async function load() {
-  if (!link.value.trim()) return
+function load() {
+  if (link.value.trim()) request({ url: link.value })
+}
+function loadPasted() {
+  if (pasted.value.trim()) request({ url: failure.value?.url || link.value, payload: pasted.value.trim() })
+}
+
+async function request(body: { url: string, payload?: string } | { draft: string }) {
   loading.value = true
   failure.value = null
   preview.value = null
   try {
-    const res = await $fetch('/api/import/preview', { method: 'POST', body: { url: link.value } })
+    const res = await $fetch('/api/import/preview', { method: 'POST', body })
+    pasted.value = ''
+    if (res.draft.sourceUrl) link.value = res.draft.sourceUrl
     preview.value = res
     const d = res.draft
     Object.assign(form, {
@@ -54,6 +67,7 @@ async function load() {
       code: e.data?.data?.code ?? 'network',
       message: e.data?.statusMessage ?? 'No se pudo cargar el enlace',
       url: e.data?.data?.url,
+      rawDataUrl: e.data?.data?.rawDataUrl,
     }
   }
   finally {
@@ -62,8 +76,12 @@ async function load() {
 }
 
 onMounted(() => {
-  if (shared) load()
+  if (q('draft')) request({ draft: q('draft') })
+  else if (shared) load()
 })
+
+// The server can't read the model: offer the bookmarklet and "pegar datos"
+const browserHelp = computed(() => !!failure.value?.rawDataUrl && ['blocked', 'unavailable', 'browser', 'bad-payload'].includes(failure.value.code))
 
 const draft = computed(() => preview.value?.draft ?? null)
 const thumb = (url: string) => (url.includes('bblmw.com') ? `${url.split('?')[0]}?x-oss-process=image/resize,w_400/format,webp` : url)
@@ -137,7 +155,8 @@ const priorityItems = PRIORITIES.map(p => ({ label: PRIORITY_META[p].label, valu
       <UButton type="submit" label="Cargar" size="xl" :loading="loading" :disabled="!link.trim()" />
     </form>
     <p v-if="!draft && !failure && !loading" class="-mt-2 text-sm text-muted">
-      También puedes compartir un modelo desde la app de MakerWorld o desde Chrome y elegir 3tero.
+      También puedes compartir un modelo desde la app de MakerWorld o desde Chrome y elegir 3tero,
+      o usar el marcador «3tero» en la página del modelo.
     </p>
 
     <!-- Loading skeleton -->
@@ -156,9 +175,25 @@ const priorityItems = PRIORITIES.map(p => ({ label: PRIORITY_META[p].label, valu
       :color="failure.code === 'unsupported' ? 'neutral' : 'warning'"
       variant="soft"
       :title="failure.message"
-      :description="failure.code === 'blocked' ? 'No se intenta saltar la protección de la web. Puedes crear el proyecto a mano con el enlace.' : failure.code === 'unavailable' ? 'Puede ser algo pasajero. Si sigue pasando, crea el proyecto a mano con el enlace.' : undefined"
+      :description="failure.code === 'blocked' ? 'MakerWorld pide una verificación al servidor y no se intenta saltar. Impórtalo desde tu navegador o créalo a mano.' : failure.code === 'unavailable' ? 'Puede ser algo pasajero. Si sigue pasando, impórtalo desde tu navegador o créalo a mano.' : undefined"
       :actions="[{ label: 'Crear a mano', icon: 'i-lucide-pencil', to: { path: '/projects/new', query: failure.url ? { sourceUrl: failure.url } : {} } }]"
     />
+
+    <!-- Import with the user's browser (ADR 0007): bookmarklet or pasted data -->
+    <section v-if="failure && browserHelp" class="flex flex-col gap-3 rounded-2xl border border-default p-4">
+      <h2 class="font-semibold">Importar desde tu navegador</h2>
+      <p class="text-sm text-muted">
+        Abre el modelo en MakerWorld y usa el marcador «3tero»
+        (<ULink to="/settings#marcador" class="text-primary">cómo instalarlo</ULink>). O pega los datos a mano:
+      </p>
+      <ol class="flex list-decimal flex-col gap-1 pl-5 text-sm text-muted">
+        <li>Abre <ULink :to="failure.rawDataUrl!" target="_blank" class="text-primary">los datos del modelo</ULink> (verás mucho texto).</li>
+        <li>Selecciona todo el texto y cópialo.</li>
+        <li>Pégalo aquí:</li>
+      </ol>
+      <UTextarea v-model="pasted" :rows="3" placeholder="Pega aquí el texto copiado" class="w-full" :disabled="loading" />
+      <UButton label="Usar estos datos" icon="i-lucide-clipboard-paste" class="self-start" :loading="loading" :disabled="!pasted.trim()" @click="loadPasted" />
+    </section>
 
     <Transition name="expand">
       <div v-if="draft" class="flex flex-col gap-6">

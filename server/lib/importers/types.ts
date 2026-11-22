@@ -45,7 +45,7 @@ export interface ImportedProjectDraft {
   selectedProfileId: string | null
   materials: ImportedMaterial[]
   /** Which extraction path worked: richer sources first. */
-  via: 'api' | 'next-data' | 'open-graph'
+  via: 'api' | 'next-data' | 'open-graph' | 'browser'
 }
 
 export interface ImportResult {
@@ -59,6 +59,13 @@ export interface ProjectImporter {
   label: string
   matches: (url: URL) => boolean
   fetch: (url: URL, opts: FetchOptions) => Promise<ImportResult>
+  /**
+   * Builds the draft from raw data the user's own browser read on the platform, for when the platform
+   * challenges our server (ADR 0007). Must validate that the data belongs to `url`.
+   */
+  fromPayload?: (raw: unknown, url: URL, opts: Pick<FetchOptions, 'printer'>) => ImportResult
+  /** Address the user can open in their browser to copy that raw data by hand. */
+  rawDataUrl?: (url: URL) => string | null
 }
 
 export interface FetchOptions {

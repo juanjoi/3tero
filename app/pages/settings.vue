@@ -24,6 +24,19 @@ async function restore() {
   catch (err) { onError(err, 'No se pudo restaurar la copia') }
 }
 
+// Bookmarklet: built on the client, with the origin the user actually browses (proxy, VPN…)
+const bookmarklet = ref('')
+onMounted(() => { bookmarklet.value = makerWorldBookmarklet(location.origin) })
+async function copyBookmarklet() {
+  try {
+    await navigator.clipboard.writeText(bookmarklet.value)
+    toast.add({ title: 'Código copiado', icon: 'i-lucide-clipboard-check' })
+  }
+  catch {
+    toast.add({ title: 'No se pudo copiar', description: 'Selecciona el código y cópialo a mano.', icon: 'i-lucide-clipboard-x', color: 'warning' })
+  }
+}
+
 const modes = [
   { label: 'Sistema', value: 'system', icon: 'i-lucide-monitor' },
   { label: 'Claro', value: 'light', icon: 'i-lucide-sun' },
@@ -51,6 +64,36 @@ const modes = [
           <li>Ficheros por proyecto: {{ storage.maxFilesPerProject }}</li>
           <li>Imágenes por proyecto: {{ storage.maxImagesPerProject }}</li>
         </ul>
+      </div>
+    </UCard>
+
+    <UCard id="marcador">
+      <template #header><h2 class="font-semibold">Marcador para importar de MakerWorld</h2></template>
+      <div class="flex flex-col gap-3 text-sm">
+        <p class="text-muted">
+          MakerWorld no deja que el servidor lea los modelos. Este marcador los lee con tu navegador,
+          en la página del modelo, y los trae a 3tero para revisarlos.
+        </p>
+        <div class="flex flex-col gap-1">
+          <span class="font-semibold">Ordenador</span>
+          <span class="text-muted">Arrastra este botón a la barra de marcadores:</span>
+          <a
+            v-if="bookmarklet"
+            :href="bookmarklet"
+            class="self-start rounded-full bg-primary px-4 py-1.5 font-semibold text-inverted"
+            @click.prevent
+          >3tero</a>
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="font-semibold">Móvil o tablet (Chrome)</span>
+          <ol class="flex list-decimal flex-col gap-1 pl-5 text-muted">
+            <li>Copia el código del marcador.</li>
+            <li>Guarda cualquier página como marcador; edítalo, llámalo «3tero» y pega el código como dirección (URL).</li>
+            <li>En la página de un modelo de MakerWorld, escribe «3tero» en la barra de direcciones y toca el marcador (el que tiene la estrella).</li>
+          </ol>
+          <UTextarea :model-value="bookmarklet" readonly :rows="2" class="w-full font-mono" aria-label="Código del marcador" @focus="($event.target as HTMLTextAreaElement).select()" />
+          <UButton label="Copiar código" icon="i-lucide-copy" variant="outline" color="neutral" class="self-start" :disabled="!bookmarklet" @click="copyBookmarklet" />
+        </div>
       </div>
     </UCard>
 

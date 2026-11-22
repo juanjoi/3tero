@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { extractNextDataDesign, extractOpenGraph, guessCategory, looksBlocked, looksUnavailable, makerWorldImporter, mapDesign, parseMakerWorldUrl } from '../server/lib/importers/makerworld'
 import { extractUrl, findImporter, ImportBlockedError, ImportUnavailableError } from '../server/lib/importers'
+import { makerWorldBookmarklet } from '../app/utils/bookmarklet'
 import { htmlToText } from '../server/lib/importers/text'
 
 const design = JSON.parse(readFileSync(new URL('./fixtures/makerworld-design.json', import.meta.url), 'utf8'))
@@ -185,5 +186,63 @@ describe('helpers', () => {
   it('guessCategory', () => {
     expect(guessCategory('M3 heat set insert')).toBe('Insertos')
     expect(guessCategory('Something else')).toBe('Otros')
+  })
+})
+
+describe('import from the user browser (ADR 0007)', () => {
+  const url = new URL('https://makerworld.com/es/models/3029073-x?from=search#profileId-1')
+
+  it('maps the design JSON read by the browser', () => {
+    const res = makerWorldImporter.fromPayload!(design, url, { printer: 'A1 mini' })
+    expect(res.draft.via).toBe('browser')
+    expect(res.draft.externalId).toBe('3029073')
+    expect(res.raw).toBe(design)
+  })
+
+  it('also accepts a whole __NEXT_DATA__ document', () => {
+    const res = makerWorldImporter.fromPayload!({ props: { pageProps: { design } } }, url, { printer: 'A1 mini' })
+    expect(res.draft.title).toBe(design.title)
+  })
+
+  it('rejects data of another model or garbage', () => {
+    const other = new URL('https://makerworld.com/en/models/1')
+    expect(() => makerWorldImporter.fromPayload!(design, other, { printer: 'A1 mini' })).toThrow(/another model/)
+    expect(() => makerWorldImporter.fromPayload!({ hello: 1 }, url, { printer: 'A1 mini' })).toThrow()
+  })
+
+  it('points to the raw data the user can copy', () => {
+    expect(makerWorldImporter.rawDataUrl!(url)).toBe('https://makerworld.com/api/v1/design-service/design/3029073')
+  })
+})
+
+describe('bookmarklet', () => {
+  type Field = { name: string, value: string }
+  async function run(pathname: string, response: { ok: boolean, status: number, text: string }) {
+    const code = decodeURIComponent(makerWorldBookmarklet('https://3tero.home').replace(/^javascript:/, ''))
+    const fields: Field[] = []
+    let submitted: { method: string, action: string } | null = null
+    const form: any = { appendChild: (i: Field) => fields.push(i), submit: () => { submitted = { method: form.method, action: form.action } } }
+    const document = { createElement: (tag: string) => (tag === 'form' ? form : {}), body: { appendChild: () => {} } }
+    const location = { pathname, href: `https://makerworld.com${pathname}` }
+    const calls: string[] = []
+    const fetch = async (u: string) => { calls.push(u); return { ok: response.ok, status: response.status, text: async () => response.text } }
+    // eslint-disable-next-line no-new-func
+    await new Function('document', 'location', 'fetch', `return ${code}`)(document, location, fetch)
+    return { fields: Object.fromEntries(fields.map(f => [f.name, f.value])), submitted: submitted as any, calls }
+  }
+
+  it('posts the design read on the model page', async () => {
+    const r = await run('/es/models/3029073-x', { ok: true, status: 200, text: '{"id":3029073}' })
+    expect(r.calls).toEqual(['/api/v1/design-service/design/3029073'])
+    expect(r.submitted).toEqual({ method: 'POST', action: 'https://3tero.home/import/browser' })
+    expect(r.fields).toEqual({ url: 'https://makerworld.com/es/models/3029073-x', payload: '{"id":3029073}' })
+  })
+
+  it('posts the error instead of alerting', async () => {
+    const r = await run('/es/models/3029073-x', { ok: false, status: 403, text: '' })
+    expect(r.fields.error).toBe('HTTP 403')
+    const notModel = await run('/es', { ok: true, status: 200, text: '' })
+    expect(notModel.fields.error).toMatch(/no es la página de un modelo/)
+    expect(notModel.calls).toEqual([])
   })
 })
