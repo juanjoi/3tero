@@ -2,7 +2,7 @@
 // Import from a link: paste it or share it from Android (PWA share target → /import?url=…&text=…).
 // Step 1 previews the page once (server side), step 2 saves the reviewed draft.
 // When the platform challenges our server, the data comes from the user's browser (ADR 0007):
-// the bookmarklet route redirects here with ?draft=… (or ?error=…), or the user pastes it.
+// the bookmarklet opens /import#link=…&d=<gzip+base64url JSON> (or ?link=…&error=…), or the user pastes it.
 import type { FetchError } from 'ofetch'
 
 const route = useRoute()
@@ -67,7 +67,7 @@ function restoreOriginal() {
   original.value = null
 }
 
-async function request(body: { url: string, payload?: string } | { draft: string }) {
+async function request(body: { url: string, payload?: string }) {
   original.value = null
   loading.value = true
   failure.value = null
@@ -101,8 +101,21 @@ async function request(body: { url: string, payload?: string } | { draft: string
   }
 }
 
-onMounted(() => {
-  if (q('draft')) request({ draft: q('draft') })
+onMounted(async () => {
+  // Bookmarklet data travels in the fragment: decode it, then drop it from the address bar
+  const fragment = new URLSearchParams(location.hash.slice(1))
+  const data = fragment.get('d')
+  if (data) {
+    const from = fragment.get('link') ?? ''
+    history.replaceState(history.state, '', location.pathname)
+    link.value = from
+    try {
+      await request({ url: from, payload: await decodeBookmarkletData(data) })
+    }
+    catch {
+      failure.value = { code: 'browser', message: 'Los datos del marcador han llegado incompletos', url: from, rawDataUrl: fragment.get('raw') }
+    }
+  }
   else if (shared) load()
 })
 

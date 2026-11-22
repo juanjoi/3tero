@@ -18,7 +18,7 @@
   - Saved filters, tag chips, priority / MakerWorld filters, grid / list view, bulk actions (`/api/bulk/projects`), duplicate project.
   - Statistics `/stats`.
   - **Translate imports to Spanish** ([ADR 0008](adr/0008-translation-with-libretranslate.md)): "Traducir al español" / "Ver original" on the import review (title, description, tags) with a self-hosted LibreTranslate (shared service on the server); enabled by `NUXT_TRANSLATE_URL`. MakerWorld itself only offers English translations. Slow on CPU (~30 s for a long description) and single-word tags translate poorly.
-  - **Import from the user's browser** ([ADR 0007](adr/0007-import-from-the-user-browser.md)): MakerWorld challenges the production server even on the API, so the bookmarklet "3tero" (Ajustes) or "pegar datos" send the design JSON read by the browser; `/import/browser` caches the draft and redirects to the review. Import errors are logged with their cause (`[import] makerworld failed …`) and 429/5xx are reported as temporary.
+  - **Import from the user's browser** ([ADR 0007](adr/0007-import-from-the-user-browser.md)): MakerWorld challenges the production server even on the API, so the bookmarklet "3tero" (Ajustes) or "pegar datos" send the design JSON read by the browser; the bookmarklet opens `/import#link=…&d=<gzip+base64url>` (a navigation: MakerWorld's CSP `form-action 'self' https:` blocks a form post to HTTP 3tero). Import errors are logged with their cause (`[import] makerworld failed …`) and 429/5xx are reported as temporary.
   - Kanban board `/board` removed (2026-11-22): no use for us; status changes from the detail stepper and bulk actions. Statistics now in the phone bottom bar.
   - Backup / restore ZIP ([ops/backup.md](ops/backup.md)), verified round-trip and invalid-file rejection.
 - **Release pipeline**: GitHub Actions checks every push/PR (typecheck, tests, build) and publishes `ghcr.io/juanjoi/3tero:X.Y.Z` on `vX.Y.Z` tags.
@@ -45,7 +45,7 @@
 
 - API routes under `/api/projects/<word>` collide with `/api/projects/:id` in Nitro typed fetch (types become `{}`): bulk lives at `/api/bulk/projects`.
 - MakerWorld `DesignModelId` inside a 3MF is the design `modelId` hash, not the URL id (see research/bambu-3mf.md).
-- MakerWorld: the model **HTML page** is always challenged for servers; the design **API** depends on the network — fine from a home Mac, **challenged from the mini PC**. Never bypass it: the browser import (ADR 0007) is the way. The bookmarklet is untested inside a real MakerWorld tab until someone uses it (page CSP `form-action` could block it; pasting still works).
+- MakerWorld: the model **HTML page** is always challenged for servers; the design **API** depends on the network — fine from a home Mac, **challenged from the mini PC**. Never bypass it: the browser import (ADR 0007) is the way. The bookmarklet's form-post version was blocked by MakerWorld's CSP in a real tab; the navigation version is verified up to `/import` decoding in Chrome, still to be confirmed from a real MakerWorld tab.
 - Editing server files while a request is in flight restarts Nitro in dev and drops that request (seen with uploads).
 
 ## Blockers / open questions

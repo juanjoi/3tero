@@ -42,13 +42,6 @@ async function importerFor(text: string) {
   return { url, importer }
 }
 
-/** Address to copy the raw data by hand, sent with errors so the UI can offer "pegar datos" (ADR 0007). */
-export function rawDataUrlFor(text: string) {
-  const url = extractUrl(text)
-  if (!url) return null
-  return findImporter(url)?.rawDataUrl?.(url) ?? null
-}
-
 /** Fetches (or reuses) the draft for a pasted/shared text containing a link. */
 export async function previewImport(text: string) {
   const { url, importer } = await importerFor(text)
@@ -99,14 +92,6 @@ export async function previewFromPayload(text: string, payload: string) {
   }
   remember(result)
   return withDuplicates(result.draft)
-}
-
-/** Draft already cached (the bookmarklet route stores it and redirects to the review page). */
-export async function previewCached(key: string) {
-  const [importer = '', externalId = ''] = key.split(':', 2)
-  const hit = getCachedImport(importer, externalId)
-  if (!hit) throw createError({ statusCode: 410, statusMessage: 'La vista previa ha caducado, vuelve a importar el modelo', data: { code: 'expired' } })
-  return withDuplicates(hit.draft)
 }
 
 const IMAGE_HOSTS = new Set(MAKERWORLD_IMAGE_HOSTS)
