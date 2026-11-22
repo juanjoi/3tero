@@ -16,9 +16,10 @@ Options weighed:
   weaker quality (it pivots through English: "Zahnstocher Spender" → "Donante de dientes").
 
 ## Decision
-- **LibreTranslate** (`libretranslate/libretranslate`, pinned) runs in the 3tero stack, reachable only
-  on its internal network, with the languages found on MakerWorld (`LT_LOAD_ONLY`). 3tero calls it at
-  `NUXT_TRANSLATE_URL`; without it the feature is hidden.
+- **LibreTranslate** (`libretranslate/libretranslate`, pinned) runs on the server as a shared
+  service of its own (other home apps may use it), not published through the proxy, with the
+  languages found on MakerWorld (`LT_LOAD_ONLY`). 3tero calls it at `NUXT_TRANSLATE_URL`; without it
+  the feature is hidden, and when it is down the button reports it.
 - On the import review page, **"Traducir al español"** translates title, description and tags;
   **"Ver original"** restores them. Only on demand, and the user reviews before saving.
 - LibreTranslate detects **one source language per request**, so title, tags and description go as
