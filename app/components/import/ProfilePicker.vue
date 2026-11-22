@@ -1,12 +1,9 @@
 <script setup lang="ts">
-// Radio list of print profiles from the source platform; profiles for our printer first.
+// Radio list of the print profiles sliced for our printer (others are not imported).
 const props = defineProps<{ profiles: ImportProfile[], printer: string }>()
 const selected = defineModel<string | null>({ required: true })
 
-const ordered = computed(() => {
-  const rank = { native: 0, resliced: 1, other: 2 } as const
-  return [...props.profiles].sort((a, b) => rank[a.fit] - rank[b.fit])
-})
+const ordered = computed(() => props.profiles)
 const showAll = ref(false)
 const visible = computed(() => {
   if (showAll.value) return ordered.value
@@ -47,9 +44,7 @@ function facts(p: ImportProfile) {
         <span class="flex min-w-0 flex-1 flex-col gap-1">
           <span class="text-sm font-semibold leading-snug">{{ p.name }}</span>
           <span class="flex flex-wrap items-center gap-1.5">
-            <UBadge v-if="p.fit === 'native'" :label="`Tu impresora · ${printer}`" size="sm" variant="soft" icon="i-lucide-check" />
-            <UBadge v-else-if="p.fit === 'resliced'" :label="`Para ${p.printer} · datos de ${printer}`" size="sm" variant="soft" color="neutral" />
-            <UBadge v-else :label="p.printer ?? 'Otra impresora'" size="sm" variant="soft" color="warning" />
+            <UBadge :label="`Tu impresora · ${printer}`" size="sm" variant="soft" icon="i-lucide-check" />
           </span>
           <span class="text-xs text-muted">{{ facts(p) }}</span>
           <ColorSwatches v-if="p.filaments.length" :colors="p.filaments.map(f => f.colorHex)" />

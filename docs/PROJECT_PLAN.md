@@ -155,7 +155,7 @@ cost = Σ over filaments (grams × price_per_kg / 1000)    [€]
 2. The server picks the importer whose URL pattern matches and extracts: title, description, images, tags, designer, license and, when available, print profile data (time, grams, filaments).
 3. The user reviews a **pre-filled form** before saving.
 4. Images are **downloaded and stored locally**.
-5. The user picks a **print profile** (the one compatible with the A1 mini is preselected); it pre-fills estimated grams, time and filaments.
+5. The user picks a **print profile** among those sliced for the A1 mini; it pre-fills estimated grams, time and filaments. Models without an A1 mini profile are imported without one (estimate comes from the uploaded 3MF).
 6. Model files **cannot be downloaded without a MakerWorld login** → the user uploads the 3MF/STL manually (a link to the model page is shown).
 
 Verified details, endpoints and fallbacks: [research/makerworld.md](research/makerworld.md) · decision: [ADR 0005](adr/0005-makerworld-import-strategy.md).

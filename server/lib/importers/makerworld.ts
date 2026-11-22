@@ -40,36 +40,31 @@ export function mapDesign(D: any, opts: { printer: string, instanceId?: string |
   }
   const instances: any[] = [...(D.instances ?? [])].sort((a, b) => rank(a.id) - rank(b.id))
 
-  const profiles: ImportedProfile[] = instances.map((P) => {
-    const mi = P.extention?.modelInfo ?? {}
-    const main: string | null = mi.compatibility?.devProductName ?? null
-    // Figures re-sliced by MakerWorld for our printer, when the profile targets another one
-    const resliced = (P.extention?.otherCompatibilityModelInfo ?? []).find((o: any) => samePrinter(o.devProductName, opts.printer))
-    const native = samePrinter(main, opts.printer)
-    const src = !native && resliced ? resliced : P
-    const filaments = (src.instanceFilaments ?? P.instanceFilaments ?? [])
-      .map((f: any) => ({ type: String(f.type ?? '').trim(), colorHex: normalizeHex(f.color), grams: toNumber(f.usedG) }))
-      .filter((f: any) => f.type && f.colorHex)
-    const seconds = toNumber(src.prediction)
-    return {
-      externalId: String(P.id),
-      name: String(P.title ?? `Perfil ${P.id}`).trim(),
-      printer: main,
-      fit: native ? 'native' : resliced ? 'resliced' : 'other',
-      minutes: seconds !== null ? Math.round(seconds / 60) : null,
-      grams: toNumber(src.weight),
-      plates: Array.isArray(mi.plates) ? mi.plates.length : null,
-      needAms: !!P.needAms,
-      filaments,
-      coverUrl: typeof P.cover === 'string' ? P.cover : null,
-    }
-  })
+  // Only profiles sliced for our printer are imported. Profiles for other printers are left out, even
+  // when MakerWorld re-slices their figures for ours: that is not the 3MF you would download.
+  const profiles: ImportedProfile[] = instances
+    .filter(P => samePrinter(P.extention?.modelInfo?.compatibility?.devProductName, opts.printer))
+    .map((P) => {
+      const mi = P.extention.modelInfo
+      const filaments = (P.instanceFilaments ?? [])
+        .map((f: any) => ({ type: String(f.type ?? '').trim(), colorHex: normalizeHex(f.color), grams: toNumber(f.usedG) }))
+        .filter((f: any) => f.type && f.colorHex)
+      const seconds = toNumber(P.prediction)
+      return {
+        externalId: String(P.id),
+        name: String(P.title ?? `Perfil ${P.id}`).trim(),
+        printer: mi.compatibility.devProductName as string,
+        minutes: seconds !== null ? Math.round(seconds / 60) : null,
+        grams: toNumber(P.weight),
+        plates: Array.isArray(mi.plates) ? mi.plates.length : null,
+        needAms: !!P.needAms,
+        filaments,
+        coverUrl: typeof P.cover === 'string' ? P.cover : null,
+      }
+    })
 
-  // Preselection: profile in the URL > first one sliced for our printer > re-sliced for it > platform default
+  // Preselection: profile in the URL (if it is for our printer) > platform default > first one
   const selected = profiles.find(p => p.externalId === opts.instanceId)
-    ?? profiles.find(p => p.fit === 'native')
-    ?? profiles.find(p => p.externalId === String(D.defaultInstanceId) && p.fit === 'resliced')
-    ?? profiles.find(p => p.fit === 'resliced')
     ?? profiles.find(p => p.externalId === String(D.defaultInstanceId))
     ?? profiles[0]
 

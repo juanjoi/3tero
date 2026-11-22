@@ -304,10 +304,16 @@ const priorityItems = PRIORITIES.map(p => ({ label: PRIORITY_META[p].label, valu
           </UFormField>
         </section>
 
-        <section v-if="draft.profiles.length" class="flex flex-col gap-2">
+        <section class="flex flex-col gap-2">
           <h2 class="text-sm font-semibold">Perfil de impresión</h2>
-          <p class="-mt-1 text-xs text-muted">Sus gramos, tiempo y colores sirven de estimación hasta que subas el 3MF.</p>
-          <ProfilePicker v-model="form.profileId" :profiles="draft.profiles" :printer="printer" />
+          <template v-if="draft.profiles.length">
+            <p class="-mt-1 text-xs text-muted">Sus gramos, tiempo y colores sirven de estimación hasta que subas el 3MF.</p>
+            <ProfilePicker v-model="form.profileId" :profiles="draft.profiles" :printer="printer" />
+          </template>
+          <p v-else class="-mt-1 text-sm text-muted">
+            Este modelo no tiene perfil para la {{ printer }}: se importa sin perfil. Cuando lo lamines
+            para tu impresora, sube el 3MF en «Ficheros» y de ahí saldrán los gramos y el tiempo.
+          </p>
         </section>
 
         <section v-if="draft.materials.length" class="flex flex-col gap-2">

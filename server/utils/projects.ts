@@ -166,7 +166,6 @@ interface ImportedProfileJson {
   externalId: string
   name: string
   printer: string | null
-  fit: 'native' | 'resliced' | 'other'
   minutes: number | null
   grams: number | null
   plates: number | null

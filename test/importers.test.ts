@@ -60,10 +60,10 @@ describe('mapDesign', () => {
     expect(draft.tags.every(t => t === t.toLowerCase())).toBe(true)
   })
 
-  it('orders profiles and preselects the one sliced for the A1 mini', () => {
-    expect(draft.profiles.map(p => p.externalId)).toEqual(['3404179', '3911900', '3911936'])
+  it('imports only the profiles sliced for the A1 mini', () => {
+    expect(draft.profiles.map(p => p.externalId)).toEqual(['3911900', '3911936'])
     const selected = draft.profiles.find(p => p.externalId === draft.selectedProfileId)!
-    expect(selected.fit).toBe('native')
+    expect(selected.externalId).toBe('3911900')
     expect(selected.printer).toBe('A1 mini')
     expect(selected.minutes).toBe(Math.round(4298 / 60))
     expect(selected.filaments).toEqual([
@@ -72,20 +72,15 @@ describe('mapDesign', () => {
     ])
   })
 
-  it('uses figures re-sliced for our printer on other profiles', () => {
-    const p = draft.profiles[0]!
-    expect(p.printer).toBe('P2S')
-    expect(p.fit).toBe('resliced')
-    expect(p.minutes).toBe(Math.round(4346 / 60))
-    expect(p.grams).toBe(18)
+  it('honours the profile in the URL only when it is for our printer', () => {
+    expect(mapDesign(design, { printer: 'A1 mini', instanceId: '3911936' }).selectedProfileId).toBe('3911936')
+    expect(mapDesign(design, { printer: 'A1 mini', instanceId: '3404179' }).selectedProfileId).toBe('3911900')
   })
 
-  it('honours the profile in the URL', () => {
-    expect(mapDesign(design, { printer: 'A1 mini', instanceId: '3404179' }).selectedProfileId).toBe('3404179')
-  })
-
-  it('falls back to the default profile for printers nobody targets', () => {
-    expect(mapDesign(design, { printer: 'Ender 3' }).selectedProfileId).toBe('3404179')
+  it('imports no profile when none is for our printer', () => {
+    const other = mapDesign(design, { printer: 'Ender 3' })
+    expect(other.profiles).toEqual([])
+    expect(other.selectedProfileId).toBeNull()
   })
 
   it('maps BOM entries to materials', () => {
@@ -137,7 +132,7 @@ describe('fetch with fallbacks (mocked network)', () => {
     })
     expect(calls).toEqual(['https://makerworld.com/api/v1/design-service/design/3029073'])
     expect(res.draft.via).toBe('api')
-    expect(res.draft.profiles).toHaveLength(3)
+    expect(res.draft.profiles).toHaveLength(2)
   })
 
   it('falls back to the page when the API fails', async () => {

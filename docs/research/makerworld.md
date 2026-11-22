@@ -58,7 +58,7 @@ Profile `P = D.instances[i]`:
 | plates | `P.extention.modelInfo.plates[]{index,name,prediction,weight,thumbnail.url,filaments[]}` | note the typo `extention` |
 | main printer | `P.extention.modelInfo.compatibility.{devProductName,nozzleDiameter}` | e.g. `"A1 mini"`, `0.4` |
 | other printers | `P.extention.modelInfo.otherCompatibility[].devProductName` | |
-| re-sliced per printer | `P.extention.otherCompatibilityModelInfo[]{devProductName,prediction,weight,instanceFilaments}` | lets us show A1 mini figures even for profiles made for other printers |
+| re-sliced per printer | `P.extention.otherCompatibilityModelInfo[]{devProductName,prediction,weight,instanceFilaments}` | not used: only profiles sliced for the A1 mini are imported (decision 2026-11-22) |
 | slicer settings | `P.extention.modelInfo.projectSettings.{layerHeight,wallLoops,sparseInfillDensity}` | often empty |
 | images | `P.cover`, `P.pictures[].url` | |
 
@@ -138,7 +138,7 @@ export function mapDesign(D: any, selectedInstanceId?: number): ImportedProjectD
 
 ## UX consequences
 
-- In the import screen, profiles are listed and the one matching **A1 mini** (main or `otherCompatibilityModelInfo`) is preselected and labelled "your printer".
+- In the import screen, only profiles whose main printer is the **A1 mini** are listed (the one in the URL or the platform default preselected). Profiles for other printers are not imported, even with figures re-sliced for the A1 mini: the 3MF you'd download is still for the other printer (owner's decision, 2026-11-22).
 - The chosen profile pre-fills the first file iteration's **estimated** grams/time/filaments, waiting for the user to upload the 3MF (link "Open in MakerWorld to download" shown).
 - BOM (`boms[]`) can pre-fill "other materials" — to check on models that use it.
 

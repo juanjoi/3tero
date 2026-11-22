@@ -10,10 +10,8 @@ export interface ImportedFilament {
 export interface ImportedProfile {
   externalId: string
   name: string
-  /** Main printer the profile was sliced for (e.g. "A1 mini"). */
-  printer: string | null
-  /** 'native' = sliced for our printer, 'resliced' = platform provides figures for our printer, 'other' = neither. */
-  fit: 'native' | 'resliced' | 'other'
+  /** Printer the profile was sliced for: always ours (profiles for other printers are not imported). */
+  printer: string
   minutes: number | null
   grams: number | null
   plates: number | null
