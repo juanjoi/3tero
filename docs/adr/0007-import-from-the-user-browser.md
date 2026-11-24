@@ -20,8 +20,11 @@ the same code as before (`mapDesign`, allow-listed image download, profiles, BOM
 - **Bookmarklet "3tero"** (Ajustes → install it): on a MakerWorld model page it fetches the design
   API same-origin and **navigates** to `/import#link=…&d=…`, with the JSON gzip-compressed and
   base64url-encoded in the URL fragment (~40 KB for a 480 KB design). `/import` decodes it, removes it
-  from the address bar and sends it to its own API. Errors navigate to `/import?link=…&error=…` and
-  are shown inline in 3tero. Works on desktop and on Chrome for Android (typing the bookmark name in
+  from the address bar and sends it to its own API. A status box on the MakerWorld page shows each
+  step (reading, size, opening 3tero, or the error) with an "Abrir 3tero" button, in case the
+  automatic navigation does nothing (seen on a tablet); on errors the button opens
+  `/import?link=…&error=…` to paste the data. Browsers without `CompressionStream` send it
+  uncompressed (`&j=`). Works on desktop and on Chrome for Android (typing the bookmark name in
   the address bar).
 - Why a navigation and not a form POST (first version): MakerWorld's page CSP has
   `form-action 'self' https:`, so Chrome blocks posting to 3tero, served over plain HTTP at home. CSP

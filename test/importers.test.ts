@@ -211,38 +211,68 @@ describe('import from the user browser (ADR 0007)', () => {
 })
 
 describe('bookmarklet', () => {
-  async function run(pathname: string, response: { ok: boolean, status: number, text: string }) {
+  type Node = { textContent?: string, href?: string, style: { cssText: string }, children: Node[], appendChild: (n: Node) => void, setAttribute: () => void, remove: () => void, onclick?: () => void }
+  async function run(pathname: string, response: { status: number, text: string }, opts: { compress?: boolean } = {}) {
     const code = decodeURIComponent(makerWorldBookmarklet('http://3tero.internal').replace(/^javascript:/, ''))
+    const make = (): Node => {
+      const n: Node = { style: { cssText: '' }, children: [], appendChild: c => n.children.push(c), setAttribute: () => {}, remove: () => {} }
+      return n
+    }
+    const body = make()
+    const document = { createElement: make, body }
     const location = { pathname, origin: 'https://makerworld.com', href: `https://makerworld.com${pathname}` }
     const calls: string[] = []
     const fetch = async (u: string) => {
       calls.push(u)
       return new Response(response.text, { status: response.status })
     }
+    const timers: (() => void)[] = []
+    const setTimeout = (fn: () => void) => timers.push(fn)
+    const Compression = opts.compress === false ? undefined : CompressionStream
     // eslint-disable-next-line no-new-func
-    await new Function('location', 'fetch', `return ${code}`)(location, fetch)
-    return { href: location.href, calls }
+    await new Function('document', 'location', 'fetch', 'setTimeout', 'CompressionStream', `return ${code}`)(document, location, fetch, setTimeout, Compression)
+    timers.forEach(t => t())
+    const box = body.children[0]!
+    return {
+      href: location.href,
+      calls,
+      lines: box.children.map(c => c.textContent ?? ''),
+      buttons: box.children.filter(c => c.href).map(c => ({ text: c.textContent, href: c.href! })),
+    }
   }
 
-  it('opens 3tero with the design compressed in the fragment', async () => {
+  it('shows the steps and opens 3tero with the design compressed in the fragment', async () => {
     const json = JSON.stringify(design)
-    const r = await run('/es/models/3029073-x', { ok: true, status: 200, text: json })
+    const r = await run('/es/models/3029073-x', { status: 200, text: json })
     expect(r.calls).toEqual(['/api/v1/design-service/design/3029073'])
+    expect(r.lines.join('\n')).toMatch(/Leyendo el modelo 3029073[\s\S]*Datos leídos: \d+ KB[\s\S]*Abriendo 3tero/)
     expect(r.href.startsWith('http://3tero.internal/import#')).toBe(true)
+    expect(r.buttons).toEqual([{ text: 'Abrir 3tero', href: r.href }])
     const fragment = new URLSearchParams(r.href.split('#')[1])
     expect(fragment.get('link')).toBe('https://makerworld.com/es/models/3029073-x')
     expect(fragment.get('d')!.length).toBeLessThan(json.length / 3)
     expect(await decodeBookmarkletData(fragment.get('d')!)).toBe(json)
   })
 
-  it('opens 3tero with the error instead of alerting', async () => {
-    const r = await run('/es/models/3029073-x', { ok: false, status: 403, text: '' })
-    const query = new URLSearchParams(r.href.split('?')[1])
-    expect(r.href.startsWith('http://3tero.internal/import?')).toBe(true)
-    expect(query.get('error')).toBe('El navegador no pudo leer el modelo (HTTP 403)')
+  it('sends the data uncompressed when the browser cannot compress', async () => {
+    const json = JSON.stringify({ ...design, title: 'Caja ñandú – 3D' })
+    const r = await run('/es/models/3029073-x', { status: 200, text: json }, { compress: false })
+    const fragment = new URLSearchParams(r.href.split('#')[1])
+    expect(fragment.has('d')).toBe(false)
+    expect(await decodeBookmarkletData(fragment.get('j')!, false)).toBe(json)
+    expect(r.lines.some(l => /no comprime/.test(l))).toBe(true)
+  })
+
+  it('shows the error and offers to open 3tero to paste the data', async () => {
+    const r = await run('/es/models/3029073-x', { status: 403, text: '' })
+    expect(r.href).toBe('https://makerworld.com/es/models/3029073-x') // does not navigate by itself
+    expect(r.lines.some(l => l === 'Error: MakerWorld responde HTTP 403')).toBe(true)
+    const query = new URLSearchParams(r.buttons[0]!.href.split('?')[1])
+    expect(r.buttons[0]!.href.startsWith('http://3tero.internal/import?')).toBe(true)
+    expect(query.get('error')).toBe('El navegador no pudo leer el modelo (MakerWorld responde HTTP 403)')
     expect(query.get('raw')).toBe('https://makerworld.com/api/v1/design-service/design/3029073')
-    const notModel = await run('/es', { ok: true, status: 200, text: '' })
-    expect(new URLSearchParams(notModel.href.split('?')[1]).get('error')).toMatch(/no es la página de un modelo/)
+    const notModel = await run('/es', { status: 200, text: '' })
+    expect(notModel.lines.some(l => /no es la página de un modelo/.test(l))).toBe(true)
     expect(notModel.calls).toEqual([])
   })
 })
