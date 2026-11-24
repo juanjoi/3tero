@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
       await recordStatus(tx, id, project.status, 'printed')
     }
     await tx.update(schema.projects).set(patch).where(eq(schema.projects.id, id))
+    if (body.queueItemId) await consumeQueueItem(tx, body.queueItemId, id, body.result)
     return log!.id
   })
 

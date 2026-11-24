@@ -123,12 +123,14 @@ function stopSelecting() {
   selecting.value = false
   selected.value = []
 }
-async function bulk(action: { status?: ProjectStatus, priority?: Priority, addTags?: string[], archive?: boolean }) {
+async function bulk(action: { status?: ProjectStatus, priority?: Priority, addTags?: string[], archive?: boolean, queue?: true }) {
   if (!selected.value.length) return
   bulkBusy.value = true
   try {
     const { updated } = await $fetch('/api/bulk/projects', { method: 'POST', body: { ids: selected.value, ...action } })
-    toast.add({ title: `${updated} proyecto${updated === 1 ? '' : 's'} actualizado${updated === 1 ? '' : 's'}`, icon: 'i-lucide-check' })
+    toast.add(action.queue
+      ? { title: `${updated} proyecto${updated === 1 ? '' : 's'} añadido${updated === 1 ? '' : 's'} a la cola`, icon: 'i-lucide-list-ordered', actions: [{ label: 'Ver cola', to: '/queue' }] }
+      : { title: `${updated} proyecto${updated === 1 ? '' : 's'} actualizado${updated === 1 ? '' : 's'}`, icon: 'i-lucide-check' })
     bulkTag.value = ''
     if (action.archive) stopSelecting()
     await refresh()
@@ -303,6 +305,8 @@ const toast = useToast()
             <UInput v-model="bulkTag" size="xs" icon="i-lucide-tag" placeholder="Añadir etiqueta" class="w-36" />
             <UButton type="submit" size="xs" icon="i-lucide-plus" aria-label="Añadir etiqueta" :disabled="!bulkTag.trim() || bulkBusy" />
           </form>
+          <span class="mx-0.5 h-5 w-px bg-accented" />
+          <UButton size="xs" icon="i-lucide-list-plus" label="A la cola" variant="outline" color="neutral" :disabled="bulkBusy" @click="bulk({ queue: true })" />
           <ConfirmButton size="xs" icon="i-lucide-archive" label="Archivar" confirm-label="¿Archivar?" class="ml-auto" @confirm="bulk({ archive: true })" />
         </div>
       </div>

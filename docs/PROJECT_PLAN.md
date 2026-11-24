@@ -125,6 +125,17 @@ Every physical print attempt is recorded:
 
 The log shows the evolution of a project ("v1 failed, v2 ok") and makes the final choice obvious. Logging a successful print can offer to move the project to `printed` and to mark that file as final.
 
+### 3.4b Print queue
+An ordered list of what to print next (added 2026-11-24):
+
+- Projects are added **by hand**: "Añadir a la cola" on the project page or as a bulk action.
+- Each item is **project + file to print + copies**. The file defaults to the final one, else the latest
+  sliced one; without files, the print profile chosen when importing is the reference (with its
+  MakerWorld link). A project can be queued several times (e.g. different plates or colours).
+- Reordered with up/down arrows and "first" (touch friendly, no drag & drop); totals of time, grams and cost.
+- "Imprimir" opens the print log page pre-filled with that file; a **successful** print uses up a copy
+  (the item leaves the queue with the last one); failed or partial prints keep it.
+
 ### 3.5 Cost estimate
 ```
 cost = Σ over filaments (grams × price_per_kg / 1000)    [€]
@@ -196,6 +207,7 @@ interface ProjectImporter {
 | 13 | Stats dashboard: prints per month, success rate, grams & € spent | ✅ (done early) |
 | 14 | Other platforms' importers (Printables, Thingiverse…) | Later |
 | 15 | Users / authentication | Later (if needed) |
+| 16 | Print queue: ordered list of what to print next, with file and copies (§3.4b) | v1.x ✅ |
 
 ---
 
@@ -367,6 +379,7 @@ materials(id, category, name, spec, url)
 project_materials(project_id, material_id, quantity)
 
 status_history(id, project_id, from_status, to_status, changed_at)
+print_queue(id, project_id, file_id, copies, position, notes, created_at)   -- file_id NULL: imported profile
 project_sources(project_id, importer, external_id, url, raw jsonb, imported_at)
 settings(key, value)
 ```
@@ -382,7 +395,8 @@ POST   /api/projects/:id/status
 POST   /api/projects/:id/images             (multipart)
 POST   /api/projects/:id/files              (multipart)
 PATCH  /api/projects/:id/files/:fileId      (label, notes, grams, final flag)
-POST   /api/projects/:id/prints
+POST   /api/projects/:id/prints              ({ queueItemId } uses up a copy on success)
+GET    /api/queue | POST /api/queue | PATCH/DELETE /api/queue/:id | POST /api/queue/:id/move
 PATCH  /api/projects/:id/prints/:printId
 POST   /api/import                          { url } → draft (not saved)
 GET    /api/tags | /api/filaments | /api/materials   (+ CRUD)

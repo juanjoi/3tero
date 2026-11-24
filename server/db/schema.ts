@@ -155,6 +155,21 @@ export const printLogImages = pgTable('print_log_images', {
   size: bigint({ mode: 'number' }).notNull(),
 })
 
+// ── Print queue ─────────────────────────────────────────────────────────────
+
+/** Ordered list of what to print next: a project, the file (configuration) to print and how many copies. */
+export const printQueue = pgTable('print_queue', {
+  id: uuid().primaryKey().defaultRandom(),
+  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  /** File to print. NULL: no file yet (or it was deleted), the imported print profile is the reference. */
+  fileId: uuid('file_id').references(() => projectFiles.id, { onDelete: 'set null' }),
+  copies: integer().notNull().default(1),
+  /** Order in the queue (0 = next). Rewritten on every move, so it has no gaps after a move. */
+  position: integer().notNull(),
+  notes: text(),
+  createdAt: timestamps.createdAt,
+}, t => [index('print_queue_position_idx').on(t.position)])
+
 // ── History, sources, settings ──────────────────────────────────────────────
 
 export const statusHistory = pgTable('status_history', {

@@ -17,7 +17,7 @@ const APP_IDS = ['3tero', 'layra']
 export const BACKUP_TABLES = [
   'settings', 'tags', 'filaments', 'materials', 'projects', 'project_images', 'project_files',
   'file_filaments', 'project_materials', 'project_tags', 'print_logs', 'print_log_filaments',
-  'print_log_images', 'status_history', 'project_sources',
+  'print_log_images', 'status_history', 'project_sources', 'print_queue',
 ] as const
 
 interface BackupJson {

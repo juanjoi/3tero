@@ -36,6 +36,18 @@ async function changeStatus(status: ProjectStatus) {
   finally { changingStatus.value = false }
 }
 
+const queueing = ref(false)
+async function addToQueue() {
+  queueing.value = true
+  try {
+    const { queued } = await $fetch('/api/queue', { method: 'POST', body: { projectId: id } })
+    project.value = { ...p.value, queued }
+    toast.add({ title: 'Añadido a la cola', icon: 'i-lucide-list-ordered', actions: [{ label: 'Ver cola', to: '/queue' }] })
+  }
+  catch (err) { onError(err) }
+  finally { queueing.value = false }
+}
+
 async function setPriority(priority: Priority) {
   try {
     update(await $fetch(`/api/projects/${id}`, { method: 'PATCH', body: { priority } }))
@@ -205,8 +217,13 @@ async function hardDelete() {
 
         <div class="flex gap-2">
           <UButton icon="i-lucide-printer" label="Registrar impresión" size="lg" class="flex-1 justify-center" :to="`/projects/${id}/print`" />
+          <UButton icon="i-lucide-list-plus" size="lg" variant="outline" color="neutral" aria-label="Añadir a la cola" title="Añadir a la cola" :loading="queueing" @click="addToQueue" />
           <UButton :to="`/projects/${id}/edit`" icon="i-lucide-pencil" size="lg" variant="outline" color="neutral" aria-label="Editar" />
         </div>
+        <NuxtLink v-if="p.queued" to="/queue" class="-mt-2 flex items-center gap-1.5 text-sm text-primary hover:underline">
+          <UIcon name="i-lucide-list-ordered" class="size-4" />
+          En la cola de impresión{{ p.queued > 1 ? ` (${p.queued} veces)` : '' }} · ver cola
+        </NuxtLink>
 
         <UTabs v-model="tab" :items="tabs" variant="link" :ui="{ list: 'overflow-x-auto overflow-y-hidden', trigger: 'shrink-0' }" class="w-full">
           <template #prints>

@@ -3,7 +3,7 @@
 > Update this file at the end of every work session.
 
 **Current phase:** MVP + v1.x complete → next: naming decision, real-world use, "Later" items
-**Last update:** 2026-11-22
+**Last update:** 2026-11-24
 
 ## Done
 - **Phase 0**: plan, ADRs, mockups, research (MakerWorld, Bambu 3MF + parser prototype).
@@ -17,6 +17,7 @@
   - Shopping list `/shopping` (BOM materials + filament shortfalls of pending projects; ticks shared via `settings`).
   - Saved filters, tag chips, priority / MakerWorld filters, grid / list view, bulk actions (`/api/bulk/projects`), duplicate project.
   - Statistics `/stats`.
+  - **Print queue** `/queue` (PROJECT_PLAN §3.4b): added by hand (project page, bulk action), item = project + file (or imported profile) + copies, arrows to reorder, totals; "Imprimir" → print log with `queueItemId`, a successful print uses up a copy. Table `print_queue` (migration 0004), included in backups. Phone bar: Proyectos, Cola, Compras, Materiales, Ajustes (statistics from Ajustes again).
   - **Only A1 mini profiles are imported** (2026-11-22): profiles for other printers are left out, even with MakerWorld's figures re-sliced for the A1 mini; a model without one is imported without profile.
   - **Translate imports to Spanish** ([ADR 0008](adr/0008-translation-with-libretranslate.md)): "Traducir al español" / "Ver original" on the import review (title, description, tags) with a self-hosted LibreTranslate (shared service on the server); enabled by `NUXT_TRANSLATE_URL`. MakerWorld itself only offers English translations. Slow on CPU (~30 s for a long description) and single-word tags translate poorly.
   - **Import from the user's browser** ([ADR 0007](adr/0007-import-from-the-user-browser.md)): MakerWorld challenges the production server even on the API, so the bookmarklet "3tero" (Ajustes) or "pegar datos" send the design JSON read by the browser; the bookmarklet opens `/import#link=…&d=<gzip+base64url>` (a navigation: MakerWorld's CSP `form-action 'self' https:` blocks a form post to HTTP 3tero). Import errors are logged with their cause (`[import] makerworld failed …`) and 429/5xx are reported as temporary.

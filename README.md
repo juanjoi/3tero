@@ -13,6 +13,7 @@ Status: **MVP + v1.x complete** · see [docs/STATUS.md](docs/STATUS.md).
 - Projects with photo gallery (camera upload), tags, priority, status (modeling → sliced → printed) with history, notes, duplicate, archive.
 - Model files as iterations (STL / 3MF): Bambu Studio / OrcaSlicer 3MF auto-fills time, grams per filament, plates, thumbnail; A1 mini build-volume check; in-browser 3D viewer.
 - Print log with real grams, time, photos and cost (price snapshot); total spent per project.
+- Print queue: ordered list of what to print next, each with its file (3MF) or imported profile and copies; "Imprimir" logs the print and uses up a copy.
 - Filament & materials catalogue with stock tracking ("not enough filament" warning).
 - MakerWorld import: paste or share a link from Android → title, photos, tags, designer, license, print profile (only those sliced for the A1 mini), bill of materials. When MakerWorld challenges the server, import with the "3tero" bookmarklet or by pasting the model data (ADR 0007). Optional "Traducir al español" with a self-hosted LibreTranslate (ADR 0008).
 - Home: search, status / tag / priority / source filters, saved filters, grid or list, bulk actions.

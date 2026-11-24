@@ -91,6 +91,7 @@ export async function getProjectDetail(db: Db, id: string) {
   })
   const reference = filesOut.find(f => f.final) ?? filesOut[0] ?? null
   const imported = await getImportedProfile(db, id)
+  const queued = await countQueued(db, id)
   const stockShort = await getStockShortages(db, reference?.filaments ?? [])
 
   const printsOut = prints.map((p) => {
@@ -115,6 +116,8 @@ export async function getProjectDetail(db: Db, id: string) {
     prints: printsOut,
     spent: Math.round(printsOut.reduce((s, p) => s + p.cost, 0) * 100) / 100,
     imported,
+    /** Entries of this project in the print queue. */
+    queued,
     /** Tracked filaments without enough stock for the reference file. */
     stockShort,
     // Reference file first; otherwise the print profile chosen when importing
@@ -140,7 +143,7 @@ async function getStockShortages(db: Db, needs: { filamentId: string, grams: str
  * Import metadata of a project (platform + chosen print profile with an estimated cost:
  * catalogue price for matching type + colour, default price otherwise).
  */
-async function getImportedProfile(db: Db, projectId: string) {
+export async function getImportedProfile(db: Db, projectId: string) {
   const [src] = await db.select({
     importer: schema.projectSources.importer,
     externalId: schema.projectSources.externalId,

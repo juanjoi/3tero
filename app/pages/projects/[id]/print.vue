@@ -19,7 +19,10 @@ const RESULTS: { value: PrintResult, label: string, icon: string }[] = [
   { value: 'failed', label: 'Fallida', icon: 'i-lucide-x' },
 ]
 
-const defaultFile = props.project.files.find(f => f.final) ?? props.project.files[0]
+// From the print queue (?queue=<item>&file=<file>): that file, and a successful print uses up a copy
+const queueItemId = typeof route.query.queue === 'string' ? route.query.queue : undefined
+const defaultFile = props.project.files.find(f => f.id === route.query.file)
+  ?? props.project.files.find(f => f.final) ?? props.project.files[0]
 const state = reactive({
   fileId: defaultFile?.id as string | undefined,
   result: 'success' as PrintResult,
@@ -70,6 +73,7 @@ async function save() {
         filaments: state.filaments.filter(f => f.filamentId && f.grams > 0),
         markPrinted: state.markPrinted,
         markFinal: state.markFinal && !!state.fileId,
+        queueItemId,
       },
     })
     const printId = res.headers.get('x-print-id')
@@ -77,7 +81,7 @@ async function save() {
       await upload<ProjectDetail>(`/api/projects/${props.project.id}/prints/${printId}/images`, photos.value)
     }
     toast.add({ title: 'Impresión registrada', icon: 'i-lucide-printer' })
-    await navigateTo({ path: `/projects/${id}`, query: { tab: 'prints' } }, { replace: true })
+    await navigateTo(queueItemId ? '/queue' : { path: `/projects/${id}`, query: { tab: 'prints' } }, { replace: true })
   }
   catch (err) {
     onError(err, 'No se pudo registrar la impresión')

@@ -101,6 +101,8 @@ export const printLogSchema = z.object({
   markPrinted: z.boolean().default(false),
   /** Also mark the printed file as the final iteration */
   markFinal: z.boolean().default(false),
+  /** Logged from this print queue item: a successful print uses up one copy */
+  queueItemId: z.uuid().optional(),
 })
 export type PrintLogInput = z.input<typeof printLogSchema>
 
@@ -143,4 +145,20 @@ export const projectBulkSchema = z.object({
   priority: z.enum(PRIORITIES).optional(),
   addTags: tagNamesSchema.optional(),
   archive: z.boolean().optional(),
-}).refine(b => [b.status, b.priority, b.addTags, b.archive].filter(v => v !== undefined).length === 1, 'Una acción por petición')
+  /** Add the projects to the end of the print queue (default file, one copy each) */
+  queue: z.literal(true).optional(),
+}).refine(b => [b.status, b.priority, b.addTags, b.archive, b.queue].filter(v => v !== undefined).length === 1, 'Una acción por petición')
+
+/** Print queue: add a project (file defaults to the final / latest sliced one). */
+export const queueAddSchema = z.object({
+  projectId: z.uuid(),
+  fileId: z.uuid().nullable().optional(),
+  copies: z.coerce.number().int().min(1).max(99).default(1),
+})
+/** PATCH: only the keys sent change (no defaults). fileId null = use the imported profile. */
+export const queueUpdateSchema = z.object({
+  fileId: z.uuid().nullable().optional(),
+  copies: z.coerce.number().int().min(1).max(99).optional(),
+  notes: optionalText.optional(),
+})
+export const queueMoveSchema = z.object({ position: z.number().int().min(0).max(10_000) })

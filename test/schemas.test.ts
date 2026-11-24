@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { projectBulkSchema, projectCreateSchema, projectListQuerySchema } from '../shared/utils/schemas'
+import { projectBulkSchema, projectCreateSchema, projectListQuerySchema, queueAddSchema, queueMoveSchema, queueUpdateSchema } from '../shared/utils/schemas'
 
 describe('projectCreateSchema', () => {
   it('applies defaults and accepts missing optional fields', () => {
@@ -53,5 +53,30 @@ describe('projectBulkSchema', () => {
   it('rejects zero or several actions', () => {
     expect(() => projectBulkSchema.parse({ ids })).toThrow()
     expect(() => projectBulkSchema.parse({ ids, priority: 'high', status: 'printed' })).toThrow()
+  })
+})
+
+describe('print queue schemas', () => {
+  const id = '3f2c1e0a-1b2c-4d5e-8f90-123456789abc'
+
+  it('adds one copy by default and leaves the file to the server', () => {
+    expect(queueAddSchema.parse({ projectId: id })).toEqual({ projectId: id, copies: 1 })
+    expect(queueAddSchema.parse({ projectId: id, fileId: null, copies: '3' })).toEqual({ projectId: id, fileId: null, copies: 3 })
+  })
+
+  it('PATCH changes only the keys sent', () => {
+    expect(queueUpdateSchema.parse({ copies: 2 })).toEqual({ copies: 2 })
+    expect(queueUpdateSchema.parse({ fileId: null })).toEqual({ fileId: null })
+  })
+
+  it('rejects silly copies and positions', () => {
+    expect(() => queueAddSchema.parse({ projectId: id, copies: 0 })).toThrow()
+    expect(() => queueUpdateSchema.parse({ copies: 100 })).toThrow()
+    expect(() => queueMoveSchema.parse({ position: -1 })).toThrow()
+  })
+
+  it('bulk add to the queue is one action', () => {
+    expect(projectBulkSchema.parse({ ids: [id], queue: true }).queue).toBe(true)
+    expect(() => projectBulkSchema.parse({ ids: [id], queue: true, archive: true })).toThrow()
   })
 })

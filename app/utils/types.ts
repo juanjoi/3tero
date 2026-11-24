@@ -11,3 +11,5 @@ export type TagWithCount = { id: string, name: string, color: string | null, cou
 export type ImportPreview = InternalApi['/api/import/preview']['post']
 export type ImportDraft = ImportPreview['draft']
 export type ImportProfile = ImportDraft['profiles'][number]
+export type PrintQueueData = InternalApi['/api/queue']['get']
+export type PrintQueueItem = PrintQueueData['items'][number]

@@ -1,6 +1,7 @@
 import { and, eq, inArray, isNull, ne, sql } from 'drizzle-orm'
 
-// Applies one action to many projects: status (with history), priority, add tags, archive/restore.
+// Applies one action to many projects: status (with history), priority, add tags, archive/restore,
+// add to the print queue (in the order given, default file, one copy each).
 export default defineEventHandler(async (event) => {
   const body = await readValidatedBody(event, projectBulkSchema.parse)
   const db = useDb()
@@ -28,6 +29,15 @@ export default defineEventHandler(async (event) => {
       await tx.insert(projectTags).values(body.ids.flatMap(projectId => rows.map(r => ({ projectId, tagId: r.id })))).onConflictDoNothing()
       await tx.update(projects).set({ updatedAt: now }).where(inArray(projects.id, body.ids))
       return body.ids.length
+    }
+    if (body.queue) {
+      const rows = await tx.select({ id: projects.id, finalFileId: projects.finalFileId }).from(projects)
+        .where(inArray(projects.id, body.ids))
+      for (const projectId of body.ids) {
+        const p = rows.find(r => r.id === projectId)
+        if (p) await addToQueue(tx, { projectId, fileId: await defaultQueueFile(tx, projectId, p.finalFileId), copies: 1 })
+      }
+      return rows.length
     }
     if (body.archive !== undefined) {
       return (await tx.update(projects).set({ archivedAt: body.archive ? now : null, updatedAt: now })
